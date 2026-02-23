@@ -188,19 +188,39 @@
     #verification { display:none; border-color:#00ffff; box-shadow:0 0 20px #00ffff; }
 
     .profile-pic-container {
-        width: 160px;
-        height: 160px;
-        margin: 0 auto 25px;
-        border: 4px solid #00ffff;
+        width: 180px;
+        height: 180px;
+        margin: 0 auto 30px;
+        border: 5px solid #00ffff;
         border-radius: 50%;
         overflow: hidden;
-        box-shadow: 0 0 25px rgba(0,255,255,0.6);
+        box-shadow: 0 0 35px rgba(0,255,255,0.7);
+        position: relative;
     }
 
     .profile-pic {
         width: 100%;
         height: 100%;
         object-fit: cover;
+    }
+
+    .change-photo-btn {
+        position: absolute;
+        bottom: 8px;
+        left: 50%;
+        transform: translateX(-50%);
+        background: rgba(0,0,0,0.7);
+        color: #00ffff;
+        border: 1px solid #00ffff;
+        padding: 6px 12px;
+        border-radius: 20px;
+        font-size: 0.9rem;
+        cursor: pointer;
+        box-shadow: 0 0 10px #00ffff;
+    }
+
+    .change-photo-btn:hover {
+        background: rgba(0,255,255,0.2);
     }
 
     .profile-field {
@@ -240,6 +260,25 @@
 
     .save-btn { background: #006600; }
 
+    .logout-btn-profile {
+        background: linear-gradient(90deg, #cc0000, #660000);
+        color: #fff;
+        border: none;
+        padding: 14px 30px;
+        font-size: 1.3rem;
+        font-weight: bold;
+        border-radius: 8px;
+        cursor: pointer;
+        margin-top: 40px;
+        width: 100%;
+        box-shadow: 0 0 20px rgba(255,0,0,0.6);
+    }
+
+    .logout-btn-profile:hover {
+        transform: scale(1.03);
+        box-shadow: 0 0 30px rgba(255,0,0,0.9);
+    }
+
     .success-text { color:#00ffff; font-size:1.4rem; margin:15px 0; text-shadow:0 0 10px #00ffff; }
     .glitch { animation: glitch 2s infinite; }
 
@@ -272,25 +311,6 @@
     .stat-item label { color: #00ffaa; }
     .stat-item span { color: #ffff00; font-weight: bold; }
 
-    .logout-btn-profile {
-        background: linear-gradient(90deg, #cc0000, #660000);
-        color: #fff;
-        border: none;
-        padding: 12px 30px;
-        font-size: 1.2rem;
-        font-weight: bold;
-        border-radius: 6px;
-        cursor: pointer;
-        margin-top: 30px;
-        width: 100%;
-        box-shadow: 0 0 15px rgba(255,0,0,0.5);
-    }
-
-    .logout-btn-profile:hover {
-        transform: scale(1.03);
-        box-shadow: 0 0 25px rgba(255,0,0,0.8);
-    }
-
     @keyframes rainbow { 0%{background-position:0% 50%} 50%{background-position:100% 50%} 100%{background-position:0% 50%} }
     @keyframes blink { 0%,100%{opacity:1} 50%{opacity:0.4} }
     @keyframes glitch {
@@ -318,7 +338,6 @@
         <div class="menu-toggle" id="menuToggle">≡</div>
         
         <div class="dropdown-menu" id="dropdownMenu">
-            <a href="#" class="menu-item" id="menuBeranda"><i class="fas fa-home"></i> BERANDA</a>
             <a href="#" class="menu-item" id="menuProfil"><i class="fas fa-user-circle"></i> PROFIL</a>
             <a href="#" class="menu-item locked soon"><i class="fas fa-file-alt"></i> DOKUMEN</a>
             <a href="#" class="menu-item locked soon"><i class="fas fa-users"></i> KOMUNITAS</a>
@@ -390,26 +409,26 @@
             </div>
             <div class="stat-item">
                 <label>[NETWORK]</label>
-                <span id="networkDisplay">—</span>
+                <span>Singapore</span>
             </div>
             <div class="stat-item">
                 <label>[COUNTRY]</label>
                 <span>🇮🇩</span>
             </div>
         </div>
-
-        <button class="logout-btn" id="logoutBtn">KELUAR / LOGOUT</button>
     </div>
 
     <!-- Halaman Profil -->
     <div id="profileSection" style="display:none;">
         <div class="profile-pic-container">
-            <img src="https://images.unsplash.com/photo-1557683316-973673baf926?w=300" alt="Profil" class="profile-pic">
+            <img id="profilFoto" src="https://images.unsplash.com/photo-1557683316-973673baf926?w=300" alt="Profil" class="profile-pic">
+            <label class="change-photo-btn" for="uploadFoto">GANTI FOTO PROFIL</label>
+            <input type="file" id="uploadFoto" accept="image/*" style="display:none;">
         </div>
 
         <div class="profile-field">
             <label>Profil:</label>
-            <span>Default Hacker Avatar</span>
+            <span>Custom Avatar</span>
         </div>
 
         <div class="profile-field">
@@ -445,7 +464,7 @@
 </div>
 
 <script>
-// Matrix Rain (sama)
+// Matrix Rain
 const canvas = document.getElementById('matrix');
 const ctx = canvas.getContext('2d');
 canvas.height = window.innerHeight;
@@ -470,7 +489,7 @@ function draw() {
 }
 setInterval(draw, 40);
 
-// Menu Toggle & Update
+// Menu Toggle
 const menuToggle = document.getElementById('menuToggle');
 const dropdownMenu = document.getElementById('dropdownMenu');
 
@@ -491,18 +510,10 @@ function updateMenu() {
     const items = document.querySelectorAll('.menu-item');
     items.forEach(item => {
         if (isLoggedIn) {
-            // Sembunyikan LOGIN setelah login
-            if (item.id === 'menuLogin') {
-                item.style.display = 'none';
-            }
-            // Buka lock untuk BERANDA & PROFIL
-            if (item.id === 'menuBeranda' || item.id === 'menuProfil') {
-                item.classList.remove('locked');
-            }
+            if (item.id === 'menuLogin') item.style.display = 'none';
+            if (item.id === 'menuProfil') item.classList.remove('locked');
         } else {
-            if (item.id === 'menuLogin') {
-                item.style.display = 'flex';
-            }
+            if (item.id === 'menuLogin') item.style.display = 'flex';
         }
     });
 }
@@ -521,46 +532,24 @@ document.getElementById('menuLogin').addEventListener('click', e => {
     showPage('authSection'); 
 });
 
-document.getElementById('menuBeranda').addEventListener('click', e => { 
-    e.preventDefault(); 
-    if (!isLoggedIn) return alert('Harap login terlebih dahulu!');
-    showPage('verification'); 
-});
-
 document.getElementById('menuProfil').addEventListener('click', e => { 
     e.preventDefault(); 
     if (!isLoggedIn) return alert('Harap login terlebih dahulu!');
     showPage('profileSection'); 
 });
 
-// System Stats - FPS & Network
-let lastTime = performance.now();
-let frameCount = 0;
-
-function updateFPS() {
-    const now = performance.now();
-    frameCount++;
-    if (now - lastTime >= 1000) {
-        const fps = Math.round(frameCount * 1000 / (now - lastTime));
-        document.getElementById('fpsDisplay').textContent = fps + ' FPS';
-        frameCount = 0;
-        lastTime = now;
+// Ganti Foto Profil
+document.getElementById('uploadFoto').addEventListener('change', function(e) {
+    const file = e.target.files[0];
+    if (file) {
+        const reader = new FileReader();
+        reader.onload = function(event) {
+            document.getElementById('profilFoto').src = event.target.result;
+            alert('[ FOTO PROFIL ] Berhasil diubah dari album!');
+        };
+        reader.readAsDataURL(file);
     }
-    requestAnimationFrame(updateFPS);
-}
-requestAnimationFrame(updateFPS);
-
-// Network (jika browser support)
-if (navigator.connection) {
-    const conn = navigator.connection;
-    let speed = '—';
-    if (conn.downlink) {
-        speed = conn.downlink + ' Mbps';
-    }
-    document.getElementById('networkDisplay').textContent = speed + ' (' + (conn.effectiveType || 'unknown') + ')';
-} else {
-    document.getElementById('networkDisplay').textContent = 'Tidak terdeteksi';
-}
+});
 
 // Profil logic
 let userProfile = JSON.parse(localStorage.getItem('userProfile')) || {
@@ -592,10 +581,21 @@ document.getElementById('simpanNama').addEventListener('click', () => {
     input.disabled = true;
     document.getElementById('editNama').style.display = 'inline-block';
     document.getElementById('simpanNama').style.display = 'none';
-    alert('[ PROFILE UPDATED ]');
+    alert('[ PROFILE UPDATED ] Nama pertama: ' + userProfile.namaPertama);
 });
 
-// Login (owner + user biasa)
+// Logout (hanya di profil sekarang)
+document.getElementById('logoutBtnProfile')?.addEventListener('click', () => {
+    if (confirm("[ CONFIRM ] Keluar dari sistem?")) {
+        sessionStorage.removeItem('verified');
+        sessionStorage.removeItem('userEmail');
+        isLoggedIn = false;
+        updateMenu();
+        showPage('authSection');
+    }
+});
+
+// Login
 document.getElementById('loginForm').addEventListener('submit', e => {
     e.preventDefault();
     const email = document.getElementById('loginEmail').value.trim().toLowerCase();
@@ -654,20 +654,6 @@ document.getElementById('daftarForm').addEventListener('submit', e => {
 
     alert('[ REGISTRATION SUCCESS ] Akun berhasil dibuat!');
 });
-
-// Logout (ada 2: satu di verification, satu di profil)
-function handleLogout() {
-    if (confirm("[ CONFIRM ] Keluar dari sistem?")) {
-        sessionStorage.removeItem('verified');
-        sessionStorage.removeItem('userEmail');
-        isLoggedIn = false;
-        updateMenu();
-        showPage('authSection');
-    }
-}
-
-document.getElementById('logoutBtn')?.addEventListener('click', handleLogout);
-document.getElementById('logoutBtnProfile')?.addEventListener('click', handleLogout);
 </script>
 </body>
 </html>
