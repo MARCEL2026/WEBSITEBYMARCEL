@@ -53,6 +53,7 @@
         align-items:center;
     }
     .entry span { color:#00ffaa; font-weight:bold; }
+
     .delete-btn {
         background:#660000;
         color:#ffcccc;
@@ -66,6 +67,24 @@
     .delete-btn:hover {
         background:#990000;
         box-shadow:0 0 10px #ff0000;
+    }
+
+    .logout-btn {
+        background:linear-gradient(90deg, #cc0000, #660000);
+        color:#fff;
+        border:none;
+        padding:12px 30px;
+        font-size:1.3rem;
+        font-weight:bold;
+        border-radius:6px;
+        cursor:pointer;
+        margin-top:30px;
+        transition:0.4s;
+        box-shadow:0 0 15px rgba(255,0,0,0.5);
+    }
+    .logout-btn:hover {
+        transform:scale(1.05);
+        box-shadow:0 0 25px rgba(255,0,0,0.8);
     }
 
     form, #verification {
@@ -130,15 +149,17 @@
         <button type="submit">VERIFY IDENTITY → EXECUTE</button>
     </form>
 
-    <!-- Verifikasi Sukses (halaman kedua) -->
+    <!-- Verifikasi Sukses -->
     <div id="verification">
         <div class="success-text glitch">[ VERIFICATION SUCCESS ]</div>
         <p>IDENTITY CONFIRMED</p>
         <p>YOU ARE NOW CONNECTED TO THE SYSTEM</p>
         <p class="success-text" style="font-size:1.8rem; margin-top:25px;">WELCOME, OPERATIVE</p>
+        
+        <button class="logout-btn" id="logoutBtn">KELUAR / LOGOUT</button>
     </div>
 
-    <!-- Daftar Koneksi (hanya tampil di halaman pertama) -->
+    <!-- Daftar Koneksi -->
     <div class="join-list" id="accessLogSection">
         <h2>≡ ACCESS LOG / NEW CONNECTIONS ≡</h2>
         <div id="joinList"></div>
@@ -201,14 +222,14 @@ function renderConnections() {
         list.appendChild(div);
     });
 
-    // Tambah event listener untuk tombol delete
+    // Event delete
     document.querySelectorAll('.delete-btn').forEach(btn => {
         btn.addEventListener('click', function() {
             const idx = parseInt(this.getAttribute('data-index'));
             if (confirm(`Hapus koneksi #${idx+1} (${connections[idx].nama}) ?`)) {
                 connections.splice(idx, 1);
                 localStorage.setItem('connections', JSON.stringify(connections));
-                visitorCount = connections.length; // Sinkronkan jumlah dengan panjang array
+                visitorCount = connections.length;
                 localStorage.setItem('visitorCount', visitorCount);
                 document.getElementById('onlineCount').textContent = visitorCount;
                 renderConnections();
@@ -219,12 +240,25 @@ function renderConnections() {
 
 renderConnections();
 
-// Cek apakah sudah pernah submit (jika ada data verifikasi di sessionStorage)
+// Cek status verifikasi (sessionStorage)
 if (sessionStorage.getItem('verified') === 'true') {
     document.getElementById('joinForm').style.display = 'none';
     document.getElementById('verification').style.display = 'block';
     document.getElementById('accessLogSection').style.display = 'none';
 }
+
+// Tombol Logout
+document.getElementById('logoutBtn')?.addEventListener('click', function() {
+    if (confirm("[ CONFIRM ] Keluar dari sistem?")) {
+        sessionStorage.removeItem('verified');
+        document.getElementById('joinForm').style.display = 'block';
+        document.getElementById('verification').style.display = 'none';
+        document.getElementById('accessLogSection').style.display = 'block';
+        // Optional: reset form
+        document.getElementById('nama').value = '';
+        document.getElementById('roblox').value = '';
+    }
+});
 
 // Form Submit
 document.getElementById('joinForm').addEventListener('submit', function(e) {
@@ -247,7 +281,6 @@ document.getElementById('joinForm').addEventListener('submit', function(e) {
     
     renderConnections();
 
-    // Simpan status verified di sessionStorage (hilang saat tab ditutup)
     sessionStorage.setItem('verified', 'true');
 
     document.getElementById('joinForm').style.display = 'none';
