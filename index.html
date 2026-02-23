@@ -43,8 +43,30 @@
 
     .join-list h2 { color:#00ff9d; margin-bottom:15px; border-bottom:1px solid #0f0; padding-bottom:8px; }
 
-    .entry { margin:12px 0; padding:12px 15px; border-left:4px solid #00aa00; background:rgba(0,255,0,0.05); }
+    .entry { 
+        margin:12px 0; 
+        padding:12px 15px; 
+        border-left:4px solid #00aa00; 
+        background:rgba(0,255,0,0.05); 
+        display:flex; 
+        justify-content:space-between; 
+        align-items:center;
+    }
     .entry span { color:#00ffaa; font-weight:bold; }
+    .delete-btn {
+        background:#660000;
+        color:#ffcccc;
+        border:none;
+        padding:6px 12px;
+        border-radius:4px;
+        cursor:pointer;
+        font-size:0.9rem;
+        transition:0.3s;
+    }
+    .delete-btn:hover {
+        background:#990000;
+        box-shadow:0 0 10px #ff0000;
+    }
 
     form, #verification {
         margin:30px auto; max-width:600px;
@@ -93,7 +115,7 @@
     <h1>MARCEL</h1>
 
     <div class="status-bar">
-        [ SYSTEM ONLINE <span class="online" id="onlineCount">1</span> ]
+        [ SYSTEM ONLINE <span class="online" id="onlineCount">0</span> ]
     </div>
 
     <div class="warning">
@@ -108,7 +130,7 @@
         <button type="submit">VERIFY IDENTITY → EXECUTE</button>
     </form>
 
-    <!-- Verifikasi Sukses -->
+    <!-- Verifikasi Sukses (halaman kedua) -->
     <div id="verification">
         <div class="success-text glitch">[ VERIFICATION SUCCESS ]</div>
         <p>IDENTITY CONFIRMED</p>
@@ -116,8 +138,8 @@
         <p class="success-text" style="font-size:1.8rem; margin-top:25px;">WELCOME, OPERATIVE</p>
     </div>
 
-    <!-- Daftar Koneksi -->
-    <div class="join-list">
+    <!-- Daftar Koneksi (hanya tampil di halaman pertama) -->
+    <div class="join-list" id="accessLogSection">
         <h2>≡ ACCESS LOG / NEW CONNECTIONS ≡</h2>
         <div id="joinList"></div>
     </div>
@@ -155,8 +177,8 @@ window.addEventListener('resize', () => {
     canvas.width = window.innerWidth;
 });
 
-// Data Management
-let visitorCount = localStorage.getItem('visitorCount') ? parseInt(localStorage.getItem('visitorCount')) : 1;
+// Data
+let visitorCount = localStorage.getItem('visitorCount') ? parseInt(localStorage.getItem('visitorCount')) : 0;
 document.getElementById('onlineCount').textContent = visitorCount;
 
 let connections = JSON.parse(localStorage.getItem('connections')) || [];
@@ -169,17 +191,42 @@ function renderConnections() {
         const div = document.createElement('div');
         div.className = 'entry';
         div.innerHTML = `
-            <strong>#${index+1}</strong> CONNECTION ESTABLISHED<br>
-            <span>NAMA:</span> ${conn.nama}<br>
-            <span>ROBLOX:</span> ${conn.roblox}
+            <div>
+                <strong>#${index+1}</strong> CONNECTION ESTABLISHED<br>
+                <span>NAMA:</span> ${conn.nama}<br>
+                <span>ROBLOX:</span> ${conn.roblox}
+            </div>
+            <button class="delete-btn" data-index="${index}">DELETE</button>
         `;
         list.appendChild(div);
+    });
+
+    // Tambah event listener untuk tombol delete
+    document.querySelectorAll('.delete-btn').forEach(btn => {
+        btn.addEventListener('click', function() {
+            const idx = parseInt(this.getAttribute('data-index'));
+            if (confirm(`Hapus koneksi #${idx+1} (${connections[idx].nama}) ?`)) {
+                connections.splice(idx, 1);
+                localStorage.setItem('connections', JSON.stringify(connections));
+                visitorCount = connections.length; // Sinkronkan jumlah dengan panjang array
+                localStorage.setItem('visitorCount', visitorCount);
+                document.getElementById('onlineCount').textContent = visitorCount;
+                renderConnections();
+            }
+        });
     });
 }
 
 renderConnections();
 
-// Form Submit - Registrasi
+// Cek apakah sudah pernah submit (jika ada data verifikasi di sessionStorage)
+if (sessionStorage.getItem('verified') === 'true') {
+    document.getElementById('joinForm').style.display = 'none';
+    document.getElementById('verification').style.display = 'block';
+    document.getElementById('accessLogSection').style.display = 'none';
+}
+
+// Form Submit
 document.getElementById('joinForm').addEventListener('submit', function(e) {
     e.preventDefault();
     
@@ -200,8 +247,12 @@ document.getElementById('joinForm').addEventListener('submit', function(e) {
     
     renderConnections();
 
+    // Simpan status verified di sessionStorage (hilang saat tab ditutup)
+    sessionStorage.setItem('verified', 'true');
+
     document.getElementById('joinForm').style.display = 'none';
     document.getElementById('verification').style.display = 'block';
+    document.getElementById('accessLogSection').style.display = 'none';
 
     setTimeout(() => {
         alert('[ ACCESS GRANTED ] → SYSTEM VERIFIED: ' + nama);
