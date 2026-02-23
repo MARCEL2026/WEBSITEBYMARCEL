@@ -145,7 +145,7 @@
         margin:0 auto;
     }
 
-    input, button {
+    select, input, button {
         width:100%; 
         padding:12px; 
         margin:10px 0;
@@ -172,15 +172,113 @@
         margin:30px auto;
         background:rgba(0,0,0,0.7); 
         padding:25px;
-        border:1px solid #0f0; 
-        border-radius:8px;
+        border:2px solid #ff00ff;
+        border-radius:12px;
+        box-shadow:0 0 30px rgba(255,0,255,0.4);
     }
 
     #verification { display:none; border-color:#00ffff; box-shadow:0 0 20px #00ffff; }
-    #profileSection { display:none; border-color:#ff00ff; box-shadow:0 0 20px #ff00ff; }
+
+    .profile-pic-container {
+        width: 160px;
+        height: 160px;
+        margin: 0 auto 25px;
+        border: 4px solid #00ffff;
+        border-radius: 50%;
+        overflow: hidden;
+        box-shadow: 0 0 25px rgba(0,255,255,0.6);
+    }
+
+    .profile-pic {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+    }
+
+    .profile-field {
+        margin: 18px 0;
+        font-size: 1.2rem;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 8px 0;
+        border-bottom: 1px dashed #0f0a;
+    }
+
+    .profile-field label { min-width: 160px; text-align: left; color: #00ffaa; }
+
+    .profile-field span, .profile-field input {
+        flex: 1;
+        text-align: right;
+        color: #0f0;
+    }
+
+    .profile-field input:disabled {
+        background: transparent;
+        border: none;
+        color: #0f0a;
+    }
+
+    .edit-btn, .save-btn {
+        background: #004400;
+        color: #0f0;
+        border: none;
+        padding: 6px 14px;
+        border-radius: 4px;
+        cursor: pointer;
+        margin-left: 12px;
+        font-weight: bold;
+    }
+
+    .save-btn { background: #006600; }
 
     .success-text { color:#00ffff; font-size:1.4rem; margin:15px 0; text-shadow:0 0 10px #00ffff; }
     .glitch { animation: glitch 2s infinite; }
+
+    .community-section {
+        margin:40px auto;
+        max-width:500px;
+        background:rgba(0,0,20,0.6);
+        border:1px solid #00ffff;
+        border-radius:10px;
+        padding:20px;
+        box-shadow:0 0 20px rgba(0,255,255,0.3);
+    }
+
+    .community-section h3 {
+        color:#00ffff;
+        margin-bottom:25px;
+        text-shadow:0 0 10px #00ffff;
+        font-size:1.5rem;
+    }
+
+    .community-icons {
+        display: flex;
+        justify-content: space-around;
+        flex-wrap: wrap;
+        gap: 30px;
+    }
+
+    .community-icon {
+        text-align: center;
+        color: #00ffff;
+        font-size: 3.5rem;
+        transition: all 0.3s;
+        text-decoration: none;
+    }
+
+    .community-icon:hover {
+        transform: scale(1.15);
+        text-shadow: 0 0 20px #00ffff;
+    }
+
+    .community-icon small {
+        display: block;
+        font-size: 0.9rem;
+        margin-top: 8px;
+        color: #ff8800;
+        text-shadow: 0 0 8px #ff8800;
+    }
 
     @keyframes rainbow { 0%{background-position:0% 50%} 50%{background-position:100% 50%} 100%{background-position:0% 50%} }
     @keyframes blink { 0%,100%{opacity:1} 50%{opacity:0.4} }
@@ -231,7 +329,6 @@
             <div class="tab" id="tabDaftar">DAFTAR</div>
         </div>
 
-        <!-- Form Login -->
         <div class="tab-content active" id="formLogin">
             <form id="loginForm">
                 <input type="email" id="loginEmail" placeholder="EMAIL" required>
@@ -240,9 +337,21 @@
             </form>
         </div>
 
-        <!-- Form Daftar -->
         <div class="tab-content" id="formDaftar">
             <form id="daftarForm">
+                <select id="negara" required>
+                    <option value="">PILIH NEGARA ANDA</option>
+                    <option value="Indonesia">Indonesia</option>
+                    <option value="Malaysia">Malaysia</option>
+                    <option value="Singapura">Singapura</option>
+                    <option value="Lainnya">Lainnya</option>
+                </select>
+                <select id="kelamin" required>
+                    <option value="">PILIH KELAMIN ANDA</option>
+                    <option value="Laki-laki">Laki-laki</option>
+                    <option value="Perempuan">Perempuan</option>
+                    <option value="Lainnya">Lainnya</option>
+                </select>
                 <input type="email" id="daftarEmail" placeholder="EMAIL" required>
                 <input type="password" id="daftarPassword" placeholder="PASSWORD" required>
                 <input type="password" id="daftarConfirmPassword" placeholder="KONFIRMASI PASSWORD" required>
@@ -260,11 +369,19 @@
         
         <div class="community-section">
             <h3>≡ JOIN OUR COMMUNITIES ≡</h3>
-            <div class="community-link">
-                <a href="https://discord.gg/JDcqVcYyq" target="_blank">[DISCORD KOMUNITAS]</a>
+            <div class="community-icons">
+                <a href="https://discord.gg/JDcqVcYyq" target="_blank" class="community-icon">
+                    <i class="fab fa-discord"></i>
+                </a>
+                <div class="community-icon">
+                    <i class="fab fa-telegram-plane"></i>
+                    <small>[SOON]</small>
+                </div>
+                <div class="community-icon">
+                    <i class="fab fa-whatsapp"></i>
+                    <small>[SOON]</small>
+                </div>
             </div>
-            <div class="community-link">[TELEGRAM KOMUNITAS] <span class="soon">[SOON]</span></div>
-            <div class="community-link">[WHATSAPP KOMUNITAS] <span class="soon">[SOON]</span></div>
         </div>
 
         <button class="logout-btn" id="logoutBtn">KELUAR / LOGOUT</button>
@@ -272,11 +389,13 @@
 
     <!-- Halaman Profil -->
     <div id="profileSection" style="display:none;">
-        <div class="profile-pic"></div>
+        <div class="profile-pic-container">
+            <img src="https://images.unsplash.com/photo-1557683316-973673baf926?w=300" alt="Profil" class="profile-pic">
+        </div>
 
         <div class="profile-field">
             <label>Profil:</label>
-            <span>Default Avatar</span>
+            <span>Default Hacker Avatar</span>
         </div>
 
         <div class="profile-field">
@@ -288,7 +407,17 @@
 
         <div class="profile-field">
             <label>Nama Kedua:</label>
-            <input type="text" value="PLAYERS#5346" disabled>
+            <span>PLAYERS#5346</span>
+        </div>
+
+        <div class="profile-field">
+            <label>Kelamin Anda:</label>
+            <span id="profilKelamin">-</span>
+        </div>
+
+        <div class="profile-field">
+            <label>Negara Anda:</label>
+            <span id="profilNegara">-</span>
         </div>
 
         <div class="profile-field">
@@ -297,16 +426,10 @@
         </div>
     </div>
 
-    <!-- Daftar Koneksi (opsional, bisa dihapus jika tidak perlu) -->
-    <div class="join-list" id="accessLogSection" style="display:none;">
-        <h2>≡ ACCESS LOG / NEW CONNECTIONS ≡</h2>
-        <div id="joinList"></div>
-    </div>
-
 </div>
 
 <script>
-// Matrix Rain
+// Matrix Rain (sama)
 const canvas = document.getElementById('matrix');
 const ctx = canvas.getContext('2d');
 canvas.height = window.innerHeight;
@@ -331,7 +454,7 @@ function draw() {
 }
 setInterval(draw, 40);
 
-// Menu Toggle
+// Menu Toggle & Lock
 const menuToggle = document.getElementById('menuToggle');
 const dropdownMenu = document.getElementById('dropdownMenu');
 
@@ -346,25 +469,18 @@ document.addEventListener('click', (e) => {
     }
 });
 
-// Status login
 let isLoggedIn = sessionStorage.getItem('verified') === 'true';
 
-// Kunci menu kecuali LOGIN
 function updateMenuLock() {
-    const items = document.querySelectorAll('.menu-item');
-    items.forEach(item => {
+    document.querySelectorAll('.menu-item').forEach(item => {
         if (item.id !== 'menuLogin') {
-            if (isLoggedIn) {
-                item.classList.remove('locked');
-            } else {
-                item.classList.add('locked');
-            }
+            item.classList.toggle('locked', !isLoggedIn);
         }
     });
 }
 updateMenuLock();
 
-// Switch tab
+// Tab Login/Daftar
 document.getElementById('tabLogin').addEventListener('click', () => {
     document.getElementById('tabLogin').classList.add('active');
     document.getElementById('tabDaftar').classList.remove('active');
@@ -379,67 +495,61 @@ document.getElementById('tabDaftar').addEventListener('click', () => {
     document.getElementById('formLogin').classList.remove('active');
 });
 
-// Fungsi show page
+// Show Page
 function showPage(pageId) {
-    document.getElementById('authSection').style.display = 'none';
-    document.getElementById('verification').style.display = 'none';
-    document.getElementById('profileSection').style.display = 'none';
-    document.getElementById('accessLogSection').style.display = 'none';
-
-    document.getElementById(pageId).style.display = 'block';
+    ['authSection', 'verification', 'profileSection'].forEach(id => {
+        document.getElementById(id).style.display = id === pageId ? 'block' : 'none';
+    });
 }
 
-// Menu handler
-document.getElementById('menuLogin').addEventListener('click', (e) => {
-    e.preventDefault();
-    showPage('authSection');
-});
-
-document.getElementById('menuBeranda').addEventListener('click', (e) => {
-    e.preventDefault();
+// Menu Navigation
+document.getElementById('menuLogin').addEventListener('click', e => { e.preventDefault(); showPage('authSection'); });
+document.getElementById('menuBeranda').addEventListener('click', e => { 
+    e.preventDefault(); 
     if (!isLoggedIn) return alert('Harap login terlebih dahulu!');
-    showPage('verification');
+    showPage('verification'); 
 });
-
-document.getElementById('menuProfil').addEventListener('click', (e) => {
-    e.preventDefault();
+document.getElementById('menuProfil').addEventListener('click', e => { 
+    e.preventDefault(); 
     if (!isLoggedIn) return alert('Harap login terlebih dahulu!');
-    showPage('profileSection');
+    showPage('profileSection'); 
 });
 
-// Profil logic
+// Profil Data
 let userProfile = JSON.parse(localStorage.getItem('userProfile')) || {
     namaPertama: "PLAYERS#5346",
-    namaKedua: "PLAYERS#5346",
+    kelamin: "-",
+    negara: "-",
     id: Math.floor(1000000 + Math.random() * 9000000).toString()
 };
 
 document.getElementById('namaPertama').value = userProfile.namaPertama;
+document.getElementById('profilKelamin').textContent = userProfile.kelamin;
+document.getElementById('profilNegara').textContent = userProfile.negara;
 document.getElementById('userID').value = userProfile.id;
 
-const editBtn = document.getElementById('editNama');
-const simpanBtn = document.getElementById('simpanNama');
-const namaInput = document.getElementById('namaPertama');
-
-editBtn.addEventListener('click', () => {
-    namaInput.disabled = false;
-    namaInput.focus();
-    editBtn.style.display = 'none';
-    simpanBtn.style.display = 'inline-block';
+// Edit Nama Pertama
+document.getElementById('editNama').addEventListener('click', () => {
+    const input = document.getElementById('namaPertama');
+    input.disabled = false;
+    input.focus();
+    document.getElementById('editNama').style.display = 'none';
+    document.getElementById('simpanNama').style.display = 'inline-block';
 });
 
-simpanBtn.addEventListener('click', () => {
-    if (namaInput.value.trim() === '') return alert('Nama pertama tidak boleh kosong!');
-    userProfile.namaPertama = namaInput.value.trim();
+document.getElementById('simpanNama').addEventListener('click', () => {
+    const input = document.getElementById('namaPertama');
+    if (!input.value.trim()) return alert('Nama pertama tidak boleh kosong!');
+    userProfile.namaPertama = input.value.trim();
     localStorage.setItem('userProfile', JSON.stringify(userProfile));
-    namaInput.disabled = true;
-    editBtn.style.display = 'inline-block';
-    simpanBtn.style.display = 'none';
+    input.disabled = true;
+    document.getElementById('editNama').style.display = 'inline-block';
+    document.getElementById('simpanNama').style.display = 'none';
     alert('[ PROFILE UPDATED ]');
 });
 
 // Login
-document.getElementById('loginForm').addEventListener('submit', function(e) {
+document.getElementById('loginForm').addEventListener('submit', e => {
     e.preventDefault();
     const email = document.getElementById('loginEmail').value.trim().toLowerCase();
     const password = document.getElementById('loginPassword').value.trim();
@@ -454,31 +564,48 @@ document.getElementById('loginForm').addEventListener('submit', function(e) {
         updateMenuLock();
         showPage('verification');
         alert('[ LOGIN SUCCESS ] Selamat datang kembali!');
+    } else if (email === 'owners999@gmail.com' && password === 'owners999') {
+        sessionStorage.setItem('verified', 'true');
+        sessionStorage.setItem('userEmail', email);
+        isLoggedIn = true;
+        updateMenuLock();
+        showPage('verification');
+        alert('[ OWNER ACCESS ] Selamat datang, Owner!');
     } else {
         alert('[ LOGIN FAILED ] Email atau password salah!');
     }
 });
 
 // Daftar
-document.getElementById('daftarForm').addEventListener('submit', function(e) {
+document.getElementById('daftarForm').addEventListener('submit', e => {
     e.preventDefault();
 
+    const negara = document.getElementById('negara').value;
+    const kelamin = document.getElementById('kelamin').value;
     const email = document.getElementById('daftarEmail').value.trim().toLowerCase();
     const password = document.getElementById('daftarPassword').value.trim();
-    const confirmPassword = document.getElementById('daftarConfirmPassword').value.trim();
+    const confirm = document.getElementById('daftarConfirmPassword').value.trim();
 
-    if (password !== confirmPassword) {
-        return alert('[ ERROR ] Password dan konfirmasi tidak cocok!');
+    if (!negara || !kelamin || !email || !password || !confirm) {
+        return alert('[ ERROR ] → Semua field harus diisi!');
+    }
+
+    if (password !== confirm) {
+        return alert('[ ERROR ] → Password tidak cocok!');
     }
 
     let accounts = JSON.parse(localStorage.getItem('accounts')) || [];
-
     if (accounts.some(acc => acc.email.toLowerCase() === email)) {
-        return alert('[ ERROR ] Email sudah terdaftar!');
+        return alert('[ ERROR ] → Email sudah terdaftar!');
     }
 
-    accounts.push({ email, password });
+    accounts.push({ email, password, negara, kelamin });
     localStorage.setItem('accounts', JSON.stringify(accounts));
+
+    // Simpan ke profil
+    userProfile.kelamin = kelamin;
+    userProfile.negara = negara;
+    localStorage.setItem('userProfile', JSON.stringify(userProfile));
 
     sessionStorage.setItem('verified', 'true');
     sessionStorage.setItem('userEmail', email);
@@ -486,12 +613,11 @@ document.getElementById('daftarForm').addEventListener('submit', function(e) {
     updateMenuLock();
 
     showPage('verification');
-
     alert('[ REGISTRATION SUCCESS ] Akun berhasil dibuat!');
 });
 
 // Logout
-document.getElementById('logoutBtn')?.addEventListener('click', function() {
+document.getElementById('logoutBtn')?.addEventListener('click', () => {
     if (confirm("[ CONFIRM ] Keluar dari sistem?")) {
         sessionStorage.removeItem('verified');
         sessionStorage.removeItem('userEmail');
