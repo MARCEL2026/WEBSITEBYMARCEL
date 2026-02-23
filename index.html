@@ -114,7 +114,7 @@
     }
 
     .tab {
-        padding: 10px 30px;
+        padding: 10px 40px;
         background: #001100;
         border: 1px solid #0f0;
         cursor: pointer;
@@ -141,11 +141,11 @@
     .warning { color:#ff0044; margin:20px 0; font-size:1.3rem; }
 
     form {
-        max-width:600px;
+        max-width:500px;
         margin:0 auto;
     }
 
-    select, input, button {
+    input, button {
         width:100%; 
         padding:12px; 
         margin:10px 0;
@@ -243,30 +243,15 @@
         <!-- Form Daftar -->
         <div class="tab-content" id="formDaftar">
             <form id="daftarForm">
-                <select id="negara" required>
-                    <option value="">Pilih Negara Anda</option>
-                    <option value="Indonesia">Indonesia</option>
-                    <option value="Malaysia">Malaysia</option>
-                    <option value="Singapura">Singapura</option>
-                    <option value="Lainnya">Lainnya</option>
-                </select>
-                <select id="kelamin" required>
-                    <option value="">Pilih Kelamin Anda</option>
-                    <option value="Laki-laki">Laki-laki</option>
-                    <option value="Perempuan">Perempuan</option>
-                    <option value="Lainnya">Lainnya</option>
-                </select>
-                <input type="number" id="umur" placeholder="Umur Anda" min="13" required>
-                <input type="text" id="daftarNama" placeholder="Nama" required>
-                <input type="text" id="daftarRoblox" placeholder="Username Roblox" required>
-                <input type="email" id="daftarEmail" placeholder="Email" required>
-                <input type="password" id="daftarPassword" placeholder="Password" required>
+                <input type="email" id="daftarEmail" placeholder="EMAIL" required>
+                <input type="password" id="daftarPassword" placeholder="PASSWORD" required>
+                <input type="password" id="daftarConfirmPassword" placeholder="KONFIRMASI PASSWORD" required>
                 <button type="submit">DAFTAR</button>
             </form>
         </div>
     </div>
 
-    <!-- Halaman Verifikasi Sukses (setelah login/daftar) -->
+    <!-- Halaman Verifikasi Sukses -->
     <div id="verification" style="display:none;">
         <div class="success-text glitch">[ ACCESS GRANTED ]</div>
         <p>IDENTITY CONFIRMED</p>
@@ -312,7 +297,7 @@
         </div>
     </div>
 
-    <!-- Daftar Koneksi (hanya setelah login) -->
+    <!-- Daftar Koneksi (opsional, bisa dihapus jika tidak perlu) -->
     <div class="join-list" id="accessLogSection" style="display:none;">
         <h2>≡ ACCESS LOG / NEW CONNECTIONS ≡</h2>
         <div id="joinList"></div>
@@ -321,7 +306,7 @@
 </div>
 
 <script>
-// Matrix Rain (sama seperti sebelumnya)
+// Matrix Rain
 const canvas = document.getElementById('matrix');
 const ctx = canvas.getContext('2d');
 canvas.height = window.innerHeight;
@@ -379,7 +364,7 @@ function updateMenuLock() {
 }
 updateMenuLock();
 
-// Switch tab Login / Daftar
+// Switch tab
 document.getElementById('tabLogin').addEventListener('click', () => {
     document.getElementById('tabLogin').classList.add('active');
     document.getElementById('tabDaftar').classList.remove('active');
@@ -394,7 +379,35 @@ document.getElementById('tabDaftar').addEventListener('click', () => {
     document.getElementById('formLogin').classList.remove('active');
 });
 
-// Halaman Profil logic (sama seperti sebelumnya, tapi load dari localStorage)
+// Fungsi show page
+function showPage(pageId) {
+    document.getElementById('authSection').style.display = 'none';
+    document.getElementById('verification').style.display = 'none';
+    document.getElementById('profileSection').style.display = 'none';
+    document.getElementById('accessLogSection').style.display = 'none';
+
+    document.getElementById(pageId).style.display = 'block';
+}
+
+// Menu handler
+document.getElementById('menuLogin').addEventListener('click', (e) => {
+    e.preventDefault();
+    showPage('authSection');
+});
+
+document.getElementById('menuBeranda').addEventListener('click', (e) => {
+    e.preventDefault();
+    if (!isLoggedIn) return alert('Harap login terlebih dahulu!');
+    showPage('verification');
+});
+
+document.getElementById('menuProfil').addEventListener('click', (e) => {
+    e.preventDefault();
+    if (!isLoggedIn) return alert('Harap login terlebih dahulu!');
+    showPage('profileSection');
+});
+
+// Profil logic
 let userProfile = JSON.parse(localStorage.getItem('userProfile')) || {
     namaPertama: "PLAYERS#5346",
     namaKedua: "PLAYERS#5346",
@@ -416,10 +429,7 @@ editBtn.addEventListener('click', () => {
 });
 
 simpanBtn.addEventListener('click', () => {
-    if (namaInput.value.trim() === '') {
-        alert('Nama pertama tidak boleh kosong!');
-        return;
-    }
+    if (namaInput.value.trim() === '') return alert('Nama pertama tidak boleh kosong!');
     userProfile.namaPertama = namaInput.value.trim();
     localStorage.setItem('userProfile', JSON.stringify(userProfile));
     namaInput.disabled = true;
@@ -428,51 +438,14 @@ simpanBtn.addEventListener('click', () => {
     alert('[ PROFILE UPDATED ]');
 });
 
-// Fungsi untuk menampilkan halaman
-function showPage(pageId) {
-    document.getElementById('authSection').style.display = 'none';
-    document.getElementById('verification').style.display = 'none';
-    document.getElementById('profileSection').style.display = 'none';
-    document.getElementById('accessLogSection').style.display = 'none';
-
-    document.getElementById(pageId).style.display = 'block';
-
-    if (pageId === 'profileSection' || pageId === 'verification') {
-        document.getElementById('accessLogSection').style.display = 'block';
-    }
-}
-
-// Menu klik handler
-document.getElementById('menuLogin').addEventListener('click', (e) => {
-    e.preventDefault();
-    showPage('authSection');
-});
-
-document.getElementById('menuBeranda').addEventListener('click', (e) => {
-    e.preventDefault();
-    if (!isLoggedIn) {
-        alert('Harap login terlebih dahulu!');
-        return;
-    }
-    showPage('verification'); // atau buat halaman beranda terpisah nanti
-});
-
-document.getElementById('menuProfil').addEventListener('click', (e) => {
-    e.preventDefault();
-    if (!isLoggedIn) {
-        alert('Harap login terlebih dahulu!');
-        return;
-    }
-    showPage('profileSection');
-});
-
-// Login form
+// Login
 document.getElementById('loginForm').addEventListener('submit', function(e) {
     e.preventDefault();
     const email = document.getElementById('loginEmail').value.trim().toLowerCase();
     const password = document.getElementById('loginPassword').value.trim();
 
-    const user = connections.find(c => c.email.toLowerCase() === email && c.password === password);
+    const accounts = JSON.parse(localStorage.getItem('accounts')) || [];
+    const user = accounts.find(acc => acc.email.toLowerCase() === email && acc.password === password);
 
     if (user) {
         sessionStorage.setItem('verified', 'true');
@@ -480,44 +453,32 @@ document.getElementById('loginForm').addEventListener('submit', function(e) {
         isLoggedIn = true;
         updateMenuLock();
         showPage('verification');
-        alert('[ LOGIN SUCCESS ] Selamat datang kembali, ' + user.nama);
+        alert('[ LOGIN SUCCESS ] Selamat datang kembali!');
     } else {
         alert('[ LOGIN FAILED ] Email atau password salah!');
     }
 });
 
-// Daftar form
+// Daftar
 document.getElementById('daftarForm').addEventListener('submit', function(e) {
     e.preventDefault();
 
-    const negara = document.getElementById('negara').value;
-    const kelamin = document.getElementById('kelamin').value;
-    const umur = document.getElementById('umur').value;
-    const nama = document.getElementById('daftarNama').value.trim();
-    const roblox = document.getElementById('daftarRoblox').value.trim();
     const email = document.getElementById('daftarEmail').value.trim().toLowerCase();
     const password = document.getElementById('daftarPassword').value.trim();
+    const confirmPassword = document.getElementById('daftarConfirmPassword').value.trim();
 
-    if (!negara || !kelamin || !umur || !nama || !roblox || !email || !password) {
-        alert('[ ERROR ] → Semua field harus diisi!');
-        return;
+    if (password !== confirmPassword) {
+        return alert('[ ERROR ] Password dan konfirmasi tidak cocok!');
     }
 
-    if (connections.some(c => c.email.toLowerCase() === email)) {
-        alert('[ ERROR ] → Email sudah terdaftar!');
-        return;
+    let accounts = JSON.parse(localStorage.getItem('accounts')) || [];
+
+    if (accounts.some(acc => acc.email.toLowerCase() === email)) {
+        return alert('[ ERROR ] Email sudah terdaftar!');
     }
 
-    connections.unshift({
-        negara, kelamin, umur, nama, roblox, email, password,
-        time: new Date().toLocaleString('id-ID')
-    });
-
-    localStorage.setItem('connections', JSON.stringify(connections));
-
-    visitorCount = connections.length;
-    localStorage.setItem('visitorCount', visitorCount);
-    document.getElementById('onlineCount').textContent = visitorCount;
+    accounts.push({ email, password });
+    localStorage.setItem('accounts', JSON.stringify(accounts));
 
     sessionStorage.setItem('verified', 'true');
     sessionStorage.setItem('userEmail', email);
@@ -526,7 +487,7 @@ document.getElementById('daftarForm').addEventListener('submit', function(e) {
 
     showPage('verification');
 
-    alert('[ REGISTRATION SUCCESS ] Akun berhasil dibuat. Selamat datang, ' + nama);
+    alert('[ REGISTRATION SUCCESS ] Akun berhasil dibuat!');
 });
 
 // Logout
@@ -539,11 +500,6 @@ document.getElementById('logoutBtn')?.addEventListener('click', function() {
         showPage('authSection');
     }
 });
-
-// Render log (jika perlu)
-function renderConnections() {
-    // ... (kode render log sama seperti sebelumnya, bisa ditambahkan jika ingin tampil di beranda)
-}
 </script>
 </body>
 </html>
