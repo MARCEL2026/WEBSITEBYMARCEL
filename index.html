@@ -96,6 +96,14 @@
         pointer-events: none;
     }
 
+    .menu-item.soon::after {
+        content: "[SOON]";
+        margin-left: 10px;
+        color: #ff8800;
+        font-size: 0.85rem;
+        text-shadow: 0 0 6px #ff8800;
+    }
+
     .menu-item i { margin-right: 14px; width: 24px; text-align: center; color: #00ffff; font-size: 1.1rem; opacity: 0.9; }
 
     .menu-item:hover:not(.locked) {
@@ -145,7 +153,7 @@
         margin:0 auto;
     }
 
-    select, input, button {
+    input, button {
         width:100%; 
         padding:12px; 
         margin:10px 0;
@@ -309,15 +317,15 @@
         <div class="dropdown-menu" id="dropdownMenu">
             <a href="#" class="menu-item" id="menuBeranda"><i class="fas fa-home"></i> BERANDA</a>
             <a href="#" class="menu-item" id="menuProfil"><i class="fas fa-user-circle"></i> PROFIL</a>
-            <a href="#" class="menu-item locked"><i class="fas fa-file-alt"></i> DOKUMEN</a>
-            <a href="#" class="menu-item locked"><i class="fas fa-users"></i> KOMUNITAS</a>
-            <a href="#" class="menu-item locked"><i class="fas fa-robot"></i> BOT AI</a>
-            <a href="#" class="menu-item locked"><i class="fas fa-cog"></i> SETTING</a>
-            <a href="#" class="menu-item locked"><i class="fas fa-arrow-up"></i> UPGRADE</a>
-            <a href="#" class="menu-item locked"><i class="fas fa-shopping-cart"></i> SHOP</a>
-            <a href="#" class="menu-item locked"><i class="fas fa-headset"></i> SUPPORT</a>
-            <a href="#" class="menu-item locked"><i class="fas fa-question-circle"></i> BANTUAN</a>
-            <a href="#" class="menu-item locked"><i class="fas fa-comment-dots"></i> SARAN</a>
+            <a href="#" class="menu-item locked soon"><i class="fas fa-file-alt"></i> DOKUMEN</a>
+            <a href="#" class="menu-item locked soon"><i class="fas fa-users"></i> KOMUNITAS</a>
+            <a href="#" class="menu-item locked soon"><i class="fas fa-robot"></i> BOT AI</a>
+            <a href="#" class="menu-item locked soon"><i class="fas fa-cog"></i> SETTING</a>
+            <a href="#" class="menu-item locked soon"><i class="fas fa-arrow-up"></i> UPGRADE</a>
+            <a href="#" class="menu-item locked soon"><i class="fas fa-shopping-cart"></i> SHOP</a>
+            <a href="#" class="menu-item locked soon"><i class="fas fa-headset"></i> SUPPORT</a>
+            <a href="#" class="menu-item locked soon"><i class="fas fa-question-circle"></i> BANTUAN</a>
+            <a href="#" class="menu-item locked soon"><i class="fas fa-comment-dots"></i> SARAN</a>
             <a href="#" class="menu-item" id="menuLogin"><i class="fas fa-sign-in-alt"></i> LOGIN</a>
         </div>
     </div>
@@ -429,7 +437,7 @@
 </div>
 
 <script>
-// Matrix Rain (sama)
+// Matrix Rain
 const canvas = document.getElementById('matrix');
 const ctx = canvas.getContext('2d');
 canvas.height = window.innerHeight;
@@ -454,7 +462,7 @@ function draw() {
 }
 setInterval(draw, 40);
 
-// Menu Toggle & Lock
+// Menu Toggle
 const menuToggle = document.getElementById('menuToggle');
 const dropdownMenu = document.getElementById('dropdownMenu');
 
@@ -469,16 +477,31 @@ document.addEventListener('click', (e) => {
     }
 });
 
+// Status login
 let isLoggedIn = sessionStorage.getItem('verified') === 'true';
 
-function updateMenuLock() {
-    document.querySelectorAll('.menu-item').forEach(item => {
-        if (item.id !== 'menuLogin') {
-            item.classList.toggle('locked', !isLoggedIn);
+// Update menu lock & hide LOGIN setelah login
+function updateMenu() {
+    const items = document.querySelectorAll('.menu-item');
+    items.forEach(item => {
+        if (isLoggedIn) {
+            // Sembunyikan LOGIN setelah login
+            if (item.id === 'menuLogin') {
+                item.style.display = 'none';
+            }
+            // Buka lock untuk BERANDA & PROFIL
+            if (item.id === 'menuBeranda' || item.id === 'menuProfil') {
+                item.classList.remove('locked');
+            }
+        } else {
+            // Tampilkan LOGIN jika belum login
+            if (item.id === 'menuLogin') {
+                item.style.display = 'flex';
+            }
         }
     });
 }
-updateMenuLock();
+updateMenu();
 
 // Tab Login/Daftar
 document.getElementById('tabLogin').addEventListener('click', () => {
@@ -503,19 +526,24 @@ function showPage(pageId) {
 }
 
 // Menu Navigation
-document.getElementById('menuLogin').addEventListener('click', e => { e.preventDefault(); showPage('authSection'); });
+document.getElementById('menuLogin').addEventListener('click', e => { 
+    e.preventDefault(); 
+    showPage('authSection'); 
+});
+
 document.getElementById('menuBeranda').addEventListener('click', e => { 
     e.preventDefault(); 
     if (!isLoggedIn) return alert('Harap login terlebih dahulu!');
     showPage('verification'); 
 });
+
 document.getElementById('menuProfil').addEventListener('click', e => { 
     e.preventDefault(); 
     if (!isLoggedIn) return alert('Harap login terlebih dahulu!');
     showPage('profileSection'); 
 });
 
-// Profil Data
+// Profil logic (sama seperti sebelumnya)
 let userProfile = JSON.parse(localStorage.getItem('userProfile')) || {
     namaPertama: "PLAYERS#5346",
     kelamin: "-",
@@ -548,7 +576,7 @@ document.getElementById('simpanNama').addEventListener('click', () => {
     alert('[ PROFILE UPDATED ]');
 });
 
-// Login
+// Login (termasuk owner)
 document.getElementById('loginForm').addEventListener('submit', e => {
     e.preventDefault();
     const email = document.getElementById('loginEmail').value.trim().toLowerCase();
@@ -557,20 +585,13 @@ document.getElementById('loginForm').addEventListener('submit', e => {
     const accounts = JSON.parse(localStorage.getItem('accounts')) || [];
     const user = accounts.find(acc => acc.email.toLowerCase() === email && acc.password === password);
 
-    if (user) {
+    if (user || (email === 'owners999@gmail.com' && password === 'owners999')) {
         sessionStorage.setItem('verified', 'true');
         sessionStorage.setItem('userEmail', email);
         isLoggedIn = true;
-        updateMenuLock();
+        updateMenu();  // <-- update menu (sembunyikan LOGIN)
         showPage('verification');
-        alert('[ LOGIN SUCCESS ] Selamat datang kembali!');
-    } else if (email === 'owners999@gmail.com' && password === 'owners999') {
-        sessionStorage.setItem('verified', 'true');
-        sessionStorage.setItem('userEmail', email);
-        isLoggedIn = true;
-        updateMenuLock();
-        showPage('verification');
-        alert('[ OWNER ACCESS ] Selamat datang, Owner!');
+        alert('[ LOGIN SUCCESS ] Selamat datang!');
     } else {
         alert('[ LOGIN FAILED ] Email atau password salah!');
     }
@@ -610,9 +631,9 @@ document.getElementById('daftarForm').addEventListener('submit', e => {
     sessionStorage.setItem('verified', 'true');
     sessionStorage.setItem('userEmail', email);
     isLoggedIn = true;
-    updateMenuLock();
-
+    updateMenu();  // <-- sembunyikan LOGIN setelah daftar
     showPage('verification');
+
     alert('[ REGISTRATION SUCCESS ] Akun berhasil dibuat!');
 });
 
@@ -622,7 +643,7 @@ document.getElementById('logoutBtn')?.addEventListener('click', () => {
         sessionStorage.removeItem('verified');
         sessionStorage.removeItem('userEmail');
         isLoggedIn = false;
-        updateMenuLock();
+        updateMenu();
         showPage('authSection');
     }
 });
