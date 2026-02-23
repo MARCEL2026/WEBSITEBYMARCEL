@@ -106,14 +106,14 @@
 
     .menu-item i { margin-right: 14px; width: 24px; text-align: center; color: #00ffff; font-size: 1.1rem; opacity: 0.9; }
 
-    .menu-item:hover:not(.locked) {
+    .menu-item:hover:not(.locked):not(.soon) {
         background: rgba(0,255,0,0.12);
         color: #ffffff;
         padding-left: 35px;
         text-shadow: 0 0 8px #00ff00;
     }
 
-    .menu-item:hover:not(.locked) i { color: #ffffff; text-shadow: 0 0 10px #00ffff; }
+    .menu-item:hover:not(.locked):not(.soon) i { color: #ffffff; text-shadow: 0 0 10px #00ffff; }
 
     .tab-container {
         display: flex;
@@ -153,7 +153,7 @@
         margin:0 auto;
     }
 
-    input, button {
+    input, button, select {
         width:100%; 
         padding:12px; 
         margin:10px 0;
@@ -243,7 +243,7 @@
     .success-text { color:#00ffff; font-size:1.4rem; margin:15px 0; text-shadow:0 0 10px #00ffff; }
     .glitch { animation: glitch 2s infinite; }
 
-    .community-section {
+    .system-stats {
         margin:40px auto;
         max-width:500px;
         background:rgba(0,0,20,0.6);
@@ -253,39 +253,42 @@
         box-shadow:0 0 20px rgba(0,255,255,0.3);
     }
 
-    .community-section h3 {
+    .system-stats h3 {
         color:#00ffff;
-        margin-bottom:25px;
+        margin-bottom:20px;
         text-shadow:0 0 10px #00ffff;
         font-size:1.5rem;
     }
 
-    .community-icons {
+    .stat-item {
         display: flex;
-        justify-content: space-around;
-        flex-wrap: wrap;
-        gap: 30px;
+        justify-content: space-between;
+        margin: 12px 0;
+        font-size: 1.2rem;
+        padding: 8px 0;
+        border-bottom: 1px dashed #0f05;
     }
 
-    .community-icon {
-        text-align: center;
-        color: #00ffff;
-        font-size: 3.5rem;
-        transition: all 0.3s;
-        text-decoration: none;
+    .stat-item label { color: #00ffaa; }
+    .stat-item span { color: #ffff00; font-weight: bold; }
+
+    .logout-btn-profile {
+        background: linear-gradient(90deg, #cc0000, #660000);
+        color: #fff;
+        border: none;
+        padding: 12px 30px;
+        font-size: 1.2rem;
+        font-weight: bold;
+        border-radius: 6px;
+        cursor: pointer;
+        margin-top: 30px;
+        width: 100%;
+        box-shadow: 0 0 15px rgba(255,0,0,0.5);
     }
 
-    .community-icon:hover {
-        transform: scale(1.15);
-        text-shadow: 0 0 20px #00ffff;
-    }
-
-    .community-icon small {
-        display: block;
-        font-size: 0.9rem;
-        margin-top: 8px;
-        color: #ff8800;
-        text-shadow: 0 0 8px #ff8800;
+    .logout-btn-profile:hover {
+        transform: scale(1.03);
+        box-shadow: 0 0 25px rgba(255,0,0,0.8);
     }
 
     @keyframes rainbow { 0%{background-position:0% 50%} 50%{background-position:100% 50%} 100%{background-position:0% 50%} }
@@ -375,20 +378,23 @@
         <p>YOU ARE NOW CONNECTED TO THE SYSTEM</p>
         <p class="success-text" style="font-size:1.8rem; margin-top:25px;">WELCOME, OPERATIVE</p>
         
-        <div class="community-section">
-            <h3>≡ JOIN OUR COMMUNITIES ≡</h3>
-            <div class="community-icons">
-                <a href="https://discord.gg/JDcqVcYyq" target="_blank" class="community-icon">
-                    <i class="fab fa-discord"></i>
-                </a>
-                <div class="community-icon">
-                    <i class="fab fa-telegram-plane"></i>
-                    <small>[SOON]</small>
-                </div>
-                <div class="community-icon">
-                    <i class="fab fa-whatsapp"></i>
-                    <small>[SOON]</small>
-                </div>
+        <div class="system-stats">
+            <h3>≡ SYSTEM STATS WEBSITE ≡</h3>
+            <div class="stat-item">
+                <label>[WEBSITE]</label>
+                <span>[ONLINE]</span>
+            </div>
+            <div class="stat-item">
+                <label>[FPS]</label>
+                <span id="fpsDisplay">—</span>
+            </div>
+            <div class="stat-item">
+                <label>[NETWORK]</label>
+                <span id="networkDisplay">—</span>
+            </div>
+            <div class="stat-item">
+                <label>[COUNTRY]</label>
+                <span>🇮🇩</span>
             </div>
         </div>
 
@@ -432,12 +438,14 @@
             <label>ID:</label>
             <input type="text" id="userID" disabled>
         </div>
+
+        <button class="logout-btn-profile" id="logoutBtnProfile">KELUAR / LOGOUT</button>
     </div>
 
 </div>
 
 <script>
-// Matrix Rain
+// Matrix Rain (sama)
 const canvas = document.getElementById('matrix');
 const ctx = canvas.getContext('2d');
 canvas.height = window.innerHeight;
@@ -462,7 +470,7 @@ function draw() {
 }
 setInterval(draw, 40);
 
-// Menu Toggle
+// Menu Toggle & Update
 const menuToggle = document.getElementById('menuToggle');
 const dropdownMenu = document.getElementById('dropdownMenu');
 
@@ -477,10 +485,8 @@ document.addEventListener('click', (e) => {
     }
 });
 
-// Status login
 let isLoggedIn = sessionStorage.getItem('verified') === 'true';
 
-// Update menu lock & hide LOGIN setelah login
 function updateMenu() {
     const items = document.querySelectorAll('.menu-item');
     items.forEach(item => {
@@ -494,7 +500,6 @@ function updateMenu() {
                 item.classList.remove('locked');
             }
         } else {
-            // Tampilkan LOGIN jika belum login
             if (item.id === 'menuLogin') {
                 item.style.display = 'flex';
             }
@@ -502,21 +507,6 @@ function updateMenu() {
     });
 }
 updateMenu();
-
-// Tab Login/Daftar
-document.getElementById('tabLogin').addEventListener('click', () => {
-    document.getElementById('tabLogin').classList.add('active');
-    document.getElementById('tabDaftar').classList.remove('active');
-    document.getElementById('formLogin').classList.add('active');
-    document.getElementById('formDaftar').classList.remove('active');
-});
-
-document.getElementById('tabDaftar').addEventListener('click', () => {
-    document.getElementById('tabDaftar').classList.add('active');
-    document.getElementById('tabLogin').classList.remove('active');
-    document.getElementById('formDaftar').classList.add('active');
-    document.getElementById('formLogin').classList.remove('active');
-});
 
 // Show Page
 function showPage(pageId) {
@@ -543,7 +533,36 @@ document.getElementById('menuProfil').addEventListener('click', e => {
     showPage('profileSection'); 
 });
 
-// Profil logic (sama seperti sebelumnya)
+// System Stats - FPS & Network
+let lastTime = performance.now();
+let frameCount = 0;
+
+function updateFPS() {
+    const now = performance.now();
+    frameCount++;
+    if (now - lastTime >= 1000) {
+        const fps = Math.round(frameCount * 1000 / (now - lastTime));
+        document.getElementById('fpsDisplay').textContent = fps + ' FPS';
+        frameCount = 0;
+        lastTime = now;
+    }
+    requestAnimationFrame(updateFPS);
+}
+requestAnimationFrame(updateFPS);
+
+// Network (jika browser support)
+if (navigator.connection) {
+    const conn = navigator.connection;
+    let speed = '—';
+    if (conn.downlink) {
+        speed = conn.downlink + ' Mbps';
+    }
+    document.getElementById('networkDisplay').textContent = speed + ' (' + (conn.effectiveType || 'unknown') + ')';
+} else {
+    document.getElementById('networkDisplay').textContent = 'Tidak terdeteksi';
+}
+
+// Profil logic
 let userProfile = JSON.parse(localStorage.getItem('userProfile')) || {
     namaPertama: "PLAYERS#5346",
     kelamin: "-",
@@ -576,7 +595,7 @@ document.getElementById('simpanNama').addEventListener('click', () => {
     alert('[ PROFILE UPDATED ]');
 });
 
-// Login (termasuk owner)
+// Login (owner + user biasa)
 document.getElementById('loginForm').addEventListener('submit', e => {
     e.preventDefault();
     const email = document.getElementById('loginEmail').value.trim().toLowerCase();
@@ -589,7 +608,7 @@ document.getElementById('loginForm').addEventListener('submit', e => {
         sessionStorage.setItem('verified', 'true');
         sessionStorage.setItem('userEmail', email);
         isLoggedIn = true;
-        updateMenu();  // <-- update menu (sembunyikan LOGIN)
+        updateMenu();
         showPage('verification');
         alert('[ LOGIN SUCCESS ] Selamat datang!');
     } else {
@@ -623,7 +642,6 @@ document.getElementById('daftarForm').addEventListener('submit', e => {
     accounts.push({ email, password, negara, kelamin });
     localStorage.setItem('accounts', JSON.stringify(accounts));
 
-    // Simpan ke profil
     userProfile.kelamin = kelamin;
     userProfile.negara = negara;
     localStorage.setItem('userProfile', JSON.stringify(userProfile));
@@ -631,14 +649,14 @@ document.getElementById('daftarForm').addEventListener('submit', e => {
     sessionStorage.setItem('verified', 'true');
     sessionStorage.setItem('userEmail', email);
     isLoggedIn = true;
-    updateMenu();  // <-- sembunyikan LOGIN setelah daftar
+    updateMenu();
     showPage('verification');
 
     alert('[ REGISTRATION SUCCESS ] Akun berhasil dibuat!');
 });
 
-// Logout
-document.getElementById('logoutBtn')?.addEventListener('click', () => {
+// Logout (ada 2: satu di verification, satu di profil)
+function handleLogout() {
     if (confirm("[ CONFIRM ] Keluar dari sistem?")) {
         sessionStorage.removeItem('verified');
         sessionStorage.removeItem('userEmail');
@@ -646,7 +664,10 @@ document.getElementById('logoutBtn')?.addEventListener('click', () => {
         updateMenu();
         showPage('authSection');
     }
-});
+}
+
+document.getElementById('logoutBtn')?.addEventListener('click', handleLogout);
+document.getElementById('logoutBtnProfile')?.addEventListener('click', handleLogout);
 </script>
 </body>
 </html>
