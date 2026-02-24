@@ -338,6 +338,7 @@
         <div class="menu-toggle" id="menuToggle">≡</div>
         
         <div class="dropdown-menu" id="dropdownMenu">
+            <a href="#" class="menu-item" id="menuBeranda"><i class="fas fa-home"></i> BERANDA</a>
             <a href="#" class="menu-item" id="menuProfil"><i class="fas fa-user-circle"></i> PROFIL</a>
             <a href="#" class="menu-item locked soon"><i class="fas fa-file-alt"></i> DOKUMEN</a>
             <a href="#" class="menu-item locked soon"><i class="fas fa-users"></i> KOMUNITAS</a>
@@ -361,8 +362,8 @@
 
         <div class="tab-content active" id="formLogin">
             <form id="loginForm">
-                <input type="email" id="loginEmail" placeholder="EMAIL" required>
-                <input type="password" id="loginPassword" placeholder="PASSWORD" required>
+                <input type="email" id="loginEmail" placeholder="MASUKAN EMAIL ANDA" required>
+                <input type="password" id="loginPassword" placeholder="MASUKAN PASSWORD ANDA" required>
                 <button type="submit">LOGIN</button>
             </form>
         </div>
@@ -370,21 +371,32 @@
         <div class="tab-content" id="formDaftar">
             <form id="daftarForm">
                 <select id="negara" required>
-                    <option value="">PILIH NEGARA ANDA</option>
+                    <option value="">Pilih Asal Negara Anda</option>
                     <option value="Indonesia">Indonesia</option>
                     <option value="Malaysia">Malaysia</option>
                     <option value="Singapura">Singapura</option>
                     <option value="Lainnya">Lainnya</option>
                 </select>
                 <select id="kelamin" required>
-                    <option value="">PILIH KELAMIN ANDA</option>
+                    <option value="">Pilih Kelamin Anda</option>
                     <option value="Laki-laki">Laki-laki</option>
                     <option value="Perempuan">Perempuan</option>
                     <option value="Lainnya">Lainnya</option>
                 </select>
-                <input type="email" id="daftarEmail" placeholder="EMAIL" required>
-                <input type="password" id="daftarPassword" placeholder="PASSWORD" required>
-                <input type="password" id="daftarConfirmPassword" placeholder="KONFIRMASI PASSWORD" required>
+                <select id="games" required>
+                    <option value="">Pilih Games Anda</option>
+                    <option value="Mobile Legends">Mobile Legends</option>
+                    <option value="Free Fire">Free Fire</option>
+                    <option value="PUBG Mobile">PUBG Mobile</option>
+                    <option value="Roblox">Roblox</option>
+                    <option value="Valorant">Valorant</option>
+                    <option value="Genshin Impact">Genshin Impact</option>
+                    <option value="Lainnya">Lainnya</option>
+                </select>
+                <input type="text" id="daftarNama" placeholder="Masukan Nama Anda" required>
+                <input type="email" id="daftarEmail" placeholder="Masukan Email Anda" required>
+                <input type="password" id="daftarPassword" placeholder="Masukan Password Anda" required>
+                <input type="password" id="daftarConfirmPassword" placeholder="Konfirmasi Password" required>
                 <button type="submit">DAFTAR</button>
             </form>
         </div>
@@ -432,15 +444,10 @@
         </div>
 
         <div class="profile-field">
-            <label>Nama Pertama:</label>
+            <label>Nama:</label>
             <input type="text" id="namaPertama" disabled>
             <button class="edit-btn" id="editNama">EDIT</button>
             <button class="save-btn" id="simpanNama" style="display:none;">SIMPAN</button>
-        </div>
-
-        <div class="profile-field">
-            <label>Nama Kedua:</label>
-            <span>PLAYERS#5346</span>
         </div>
 
         <div class="profile-field">
@@ -451,6 +458,11 @@
         <div class="profile-field">
             <label>Negara Anda:</label>
             <span id="profilNegara">-</span>
+        </div>
+
+        <div class="profile-field">
+            <label>Games Favorit:</label>
+            <span id="profilGames">-</span>
         </div>
 
         <div class="profile-field">
@@ -506,24 +518,31 @@ document.addEventListener('click', (e) => {
 
 let isLoggedIn = sessionStorage.getItem('verified') === 'true';
 
-function updateMenu() {
-    const items = document.querySelectorAll('.menu-item');
-    items.forEach(item => {
-        if (isLoggedIn) {
-            if (item.id === 'menuLogin') item.style.display = 'none';
-            if (item.id === 'menuProfil') item.classList.remove('locked');
-        } else {
-            if (item.id === 'menuLogin') item.style.display = 'flex';
-        }
-    });
+// Simpan & load halaman aktif terakhir
+function saveActivePage(page) {
+    localStorage.setItem('activePage', page);
 }
-updateMenu();
 
-// Show Page
+function loadActivePage() {
+    const savedPage = localStorage.getItem('activePage') || 'authSection';
+    if (isLoggedIn) {
+        if (savedPage === 'profileSection' || savedPage === 'verification') {
+            showPage(savedPage);
+        } else {
+            showPage('verification');
+        }
+    } else {
+        showPage('authSection');
+    }
+}
+
 function showPage(pageId) {
     ['authSection', 'verification', 'profileSection'].forEach(id => {
         document.getElementById(id).style.display = id === pageId ? 'block' : 'none';
     });
+    if (isLoggedIn && (pageId === 'verification' || pageId === 'profileSection')) {
+        saveActivePage(pageId);
+    }
 }
 
 // Menu Navigation
@@ -532,13 +551,36 @@ document.getElementById('menuLogin').addEventListener('click', e => {
     showPage('authSection'); 
 });
 
+document.getElementById('menuBeranda').addEventListener('click', e => { 
+    e.preventDefault(); 
+    if (!isLoggedIn) return alert('Harap login terlebih dahulu!');
+    showPage('verification'); 
+});
+
 document.getElementById('menuProfil').addEventListener('click', e => { 
     e.preventDefault(); 
     if (!isLoggedIn) return alert('Harap login terlebih dahulu!');
     showPage('profileSection'); 
 });
 
-// Ganti Foto Profil
+// Update menu lock
+function updateMenu() {
+    const items = document.querySelectorAll('.menu-item');
+    items.forEach(item => {
+        if (isLoggedIn) {
+            if (item.id === 'menuLogin') item.style.display = 'none';
+            if (item.id === 'menuBeranda' || item.id === 'menuProfil') item.classList.remove('locked');
+        } else {
+            if (item.id === 'menuLogin') item.style.display = 'flex';
+        }
+    });
+}
+updateMenu();
+
+// Load halaman awal
+loadActivePage();
+
+// Ganti Foto Profil dari album
 document.getElementById('uploadFoto').addEventListener('change', function(e) {
     const file = e.target.files[0];
     if (file) {
@@ -553,15 +595,17 @@ document.getElementById('uploadFoto').addEventListener('change', function(e) {
 
 // Profil logic
 let userProfile = JSON.parse(localStorage.getItem('userProfile')) || {
-    namaPertama: "PLAYERS#5346",
+    namaPertama: "PLAYER#" + Math.floor(1000 + Math.random() * 9000),
     kelamin: "-",
     negara: "-",
+    games: "-",
     id: Math.floor(1000000 + Math.random() * 9000000).toString()
 };
 
 document.getElementById('namaPertama').value = userProfile.namaPertama;
 document.getElementById('profilKelamin').textContent = userProfile.kelamin;
 document.getElementById('profilNegara').textContent = userProfile.negara;
+document.getElementById('profilGames').textContent = userProfile.games;
 document.getElementById('userID').value = userProfile.id;
 
 // Edit Nama Pertama
@@ -575,24 +619,13 @@ document.getElementById('editNama').addEventListener('click', () => {
 
 document.getElementById('simpanNama').addEventListener('click', () => {
     const input = document.getElementById('namaPertama');
-    if (!input.value.trim()) return alert('Nama pertama tidak boleh kosong!');
+    if (!input.value.trim()) return alert('Nama tidak boleh kosong!');
     userProfile.namaPertama = input.value.trim();
     localStorage.setItem('userProfile', JSON.stringify(userProfile));
     input.disabled = true;
     document.getElementById('editNama').style.display = 'inline-block';
     document.getElementById('simpanNama').style.display = 'none';
-    alert('[ PROFILE UPDATED ] Nama pertama: ' + userProfile.namaPertama);
-});
-
-// Logout (hanya di profil sekarang)
-document.getElementById('logoutBtnProfile')?.addEventListener('click', () => {
-    if (confirm("[ CONFIRM ] Keluar dari sistem?")) {
-        sessionStorage.removeItem('verified');
-        sessionStorage.removeItem('userEmail');
-        isLoggedIn = false;
-        updateMenu();
-        showPage('authSection');
-    }
+    alert('[ PROFILE UPDATED ] Nama: ' + userProfile.namaPertama);
 });
 
 // Login
@@ -622,11 +655,13 @@ document.getElementById('daftarForm').addEventListener('submit', e => {
 
     const negara = document.getElementById('negara').value;
     const kelamin = document.getElementById('kelamin').value;
+    const games = document.getElementById('games').value;
+    const nama = document.getElementById('daftarNama').value.trim();
     const email = document.getElementById('daftarEmail').value.trim().toLowerCase();
     const password = document.getElementById('daftarPassword').value.trim();
     const confirm = document.getElementById('daftarConfirmPassword').value.trim();
 
-    if (!negara || !kelamin || !email || !password || !confirm) {
+    if (!negara || !kelamin || !games || !nama || !email || !password || !confirm) {
         return alert('[ ERROR ] → Semua field harus diisi!');
     }
 
@@ -639,11 +674,14 @@ document.getElementById('daftarForm').addEventListener('submit', e => {
         return alert('[ ERROR ] → Email sudah terdaftar!');
     }
 
-    accounts.push({ email, password, negara, kelamin });
+    accounts.push({ email, password, negara, kelamin, games, nama });
     localStorage.setItem('accounts', JSON.stringify(accounts));
 
+    // Simpan ke profil
+    userProfile.namaPertama = nama;
     userProfile.kelamin = kelamin;
     userProfile.negara = negara;
+    userProfile.games = games;
     localStorage.setItem('userProfile', JSON.stringify(userProfile));
 
     sessionStorage.setItem('verified', 'true');
@@ -653,6 +691,18 @@ document.getElementById('daftarForm').addEventListener('submit', e => {
     showPage('verification');
 
     alert('[ REGISTRATION SUCCESS ] Akun berhasil dibuat!');
+});
+
+// Logout (hanya di profil)
+document.getElementById('logoutBtnProfile')?.addEventListener('click', () => {
+    if (confirm("[ CONFIRM ] Keluar dari sistem?")) {
+        sessionStorage.removeItem('verified');
+        sessionStorage.removeItem('userEmail');
+        localStorage.removeItem('activePage');
+        isLoggedIn = false;
+        updateMenu();
+        showPage('authSection');
+    }
 });
 </script>
 </body>
