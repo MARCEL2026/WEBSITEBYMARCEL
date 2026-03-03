@@ -3,387 +3,225 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Live Code Editor → Buat PWA Installable Android</title>
+  <title>APK Builder Sederhana - Buat Aplikasi Sendiri</title>
   <style>
-    * { margin:0; padding:0; box-sizing:border-box; }
     body {
-      font-family: system-ui, sans-serif;
+      margin: 0;
+      font-family: Arial, sans-serif;
+      background: #f0f2f5;
       height: 100vh;
       display: flex;
       flex-direction: column;
-      background: #0d1117;
-      color: #e6edf3;
     }
     header {
-      background: #161b22;
-      padding: 12px 20px;
-      border-bottom: 1px solid #30363d;
+      background: #1a73e8;
+      color: white;
+      padding: 10px 20px;
       display: flex;
       justify-content: space-between;
       align-items: center;
-      flex-wrap: wrap;
-      gap: 12px;
     }
-    h1 { font-size: 1.4rem; }
-    .settings {
+    .container {
+      flex: 1;
       display: flex;
-      gap: 12px;
-      align-items: center;
-      flex-wrap: wrap;
+      overflow: hidden;
     }
-    .settings label { font-size: 0.85rem; color: #8b949e; white-space: nowrap; }
-    input[type=text], input[type=color], input[type=file] {
-      padding: 8px 12px;
-      background: #21262d;
-      border: 1px solid #30363d;
-      color: #e6edf3;
-      border-radius: 6px;
-      width: 140px;
-    }
-    button {
-      padding: 8px 16px;
-      color: white;
-      border: none;
-      border-radius: 6px;
-      cursor: pointer;
-    }
-    #previewSplashBtn { background: #8957e5; }
-    #previewSplashBtn:hover { background: #a37eff; }
-    #installBtn { background: #1f6feb; display: none; }
-    #installBtn:hover { background: #388bfd; }
-    #installStatus { font-size: 0.9rem; color: #58a6ff; margin-left: 8px; }
-
-    .container { flex:1; display:flex; overflow:hidden; }
-    .editor-area, .preview-area { flex:1; height:100%; }
-    .editor-area { border-right:1px solid #30363d; display:flex; flex-direction:column; }
-
-    .tabs {
-      display:flex;
-      background:#161b22;
-      border-bottom:1px solid #30363d;
-    }
-    .tab {
-      padding:10px 18px;
-      cursor:pointer;
-      background:#0d1117;
-      color:#8b949e;
-      border-right:1px solid #30363d;
-    }
-    .tab.active {
-      background:#21262d;
-      color:#e6edf3;
-      border-bottom:2px solid #58a6ff;
-    }
-
-    textarea {
-      flex:1;
-      width:100%;
-      padding:16px;
-      font-family: 'Consolas', monospace;
-      font-size:15px;
-      background:#0d1117;
-      color:#c9d1d9;
-      border:none;
-      resize:none;
-      outline:none;
-    }
-
-    iframe { width:100%; height:100%; border:none; background:white; }
-
-    /* Splash Preview */
-    #splashPreview {
-      position: fixed;
-      inset: 0;
-      background: var(--splash-bg, #000);
-      display: none;
+    .left, .right {
+      flex: 1;
+      display: flex;
       flex-direction: column;
-      justify-content: center;
-      align-items: center;
-      z-index: 9999;
-      color: white;
-      font-size: 1.8rem;
+      border: 1px solid #ddd;
+    }
+    .left { background: #fff; }
+    .right { background: #f8f9fa; }
+    .editor-header {
+      padding: 10px;
+      background: #eee;
+      font-weight: bold;
+    }
+    .controls {
+      padding: 15px;
+      background: #fff;
+      border-bottom: 1px solid #ddd;
+    }
+    .controls label { margin-right: 10px; }
+    .controls input, .controls button {
+      margin: 5px 0;
+      padding: 8px;
+    }
+    .editor {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+    }
+    textarea {
+      flex: 1;
+      font-family: 'Courier New', monospace;
+      font-size: 14px;
+      padding: 10px;
+      border: none;
+      resize: none;
+    }
+    iframe {
+      width: 100%;
+      height: 100%;
+      border: none;
+      background: white;
+    }
+    #preview-info {
+      padding: 10px;
+      background: #e3f2fd;
       text-align: center;
-      transition: opacity 0.6s;
     }
-    #splashPreview img {
-      max-width: 180px;
-      max-height: 180px;
-      object-fit: contain;
-      margin-bottom: 2rem;
-      border-radius: 30%;
+    .status {
+      padding: 8px 15px;
+      font-weight: bold;
     }
-    #splashPreview.show { display: flex; opacity: 1; }
-
-    @media (max-width:900px) {
-      .container { flex-direction:column; }
-      .editor-area, .preview-area { height:50%; border:none; border-bottom:1px solid #30363d; }
-      header { flex-direction: column; align-items: flex-start; }
-    }
+    .published { background: #d4edda; color: #155724; }
+    .unpublished { background: #f8d7da; color: #721c24; }
   </style>
 </head>
 <body>
 
 <header>
-  <h1>Buat Aplikasi PWA Installable di Android</h1>
-  <div class="settings">
-    <label>Nama App:</label>
-    <input type="text" id="appName" placeholder="Nama App" value="My Awesome App">
-
-    <label>Icon (PNG/JPG min 512px):</label>
-    <input type="file" id="appIcon" accept="image/png,image/jpeg">
-
-    <label>Bg Splash:</label>
-    <input type="color" id="bgColor" value="#000000">
-
-    <label>Theme Color:</label>
-    <input type="color" id="themeColor" value="#000000">
-
-    <button id="previewSplashBtn">Preview Splash</button>
-    <button id="installBtn">Install App Sekarang</button>
-    <span id="installStatus"></span>
-    <button id="downloadBtn">Download ZIP (Host di HTTPS)</button>
+  <h2>APK Builder Sederhana v0.1</h2>
+  <div>
+    <span class="status unpublished" id="publishStatus">Unpublished</span>
   </div>
 </header>
 
-<div class="container">
-  <div class="editor-area">
-    <div class="tabs">
-      <div class="tab active" data-lang="html">index.html</div>
-      <div class="tab" data-lang="css">style.css</div>
-      <div class="tab" data-lang="js">script.js</div>
-    </div>
+<div class="controls">
+  <label>Nama Aplikasi:</label>
+  <input type="text" id="appName" placeholder="Contoh: TikTok Baru" value="My Cool App">
 
-    <textarea id="htmlCode">
+  <label>Icon Aplikasi:</label>
+  <input type="file" id="iconUpload" accept="image/*">
+
+  <button onclick="togglePublish()">Toggle Published</button>
+  <button onclick="checkForUpdate()">Cek Update di App</button>
+  <button onclick="simulateDownloadAPK()">Download APK (simulasi)</button>
+</div>
+
+<div class="container">
+  <div class="left">
+    <div class="editor-header">Editor Kode (HTML + CSS + JS)</div>
+    <div class="editor">
+      <textarea id="codeEditor" placeholder="Tulis kode HTML + CSS + JS di sini...">
 <!DOCTYPE html>
-<html lang="id">
+<html>
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>My Awesome App</title>
-  <link rel="stylesheet" href="style.css">
-  <link rel="manifest" href="manifest.json">
-  <meta name="theme-color" content="#000000">
-  <meta name="apple-mobile-web-app-capable" content="yes">
-  <meta name="apple-mobile-web-app-status-bar-style" content="black">
+  <title>My App</title>
+  <style>
+    body { font-family: Arial; text-align: center; padding: 50px; }
+    h1 { color: #1a73e8; }
+  </style>
 </head>
 <body>
-  <h1>Selamat! Ini App Custom Kamu</h1>
-  <p>Bisa diinstall di Android via Chrome → Install app atau Add to home screen.</p>
+  <h1>Selamat Datang di <span id="appTitle">My Cool App</span>!</h1>
+  <p>Ini adalah aplikasi pertama kamu.</p>
 
-  <button id="test">Tes Klik</button>
+  <div id="updateBanner" style="display:none; background:#ffcc00; padding:15px; margin:20px;">
+    <strong>Ada Update baru!</strong> Versi terbaru tersedia.
+    <button onclick="installUpdate()">Update Sekarang</button>
+  </div>
 
-  <script src="script.js"></script>
-
-  <!-- Auto register SW -->
   <script>
-  if ('serviceWorker' in navigator) {
-    window.addEventListener('load', () => {
-      navigator.serviceWorker.register('sw.js')
-        .then(reg => console.log('SW registered!', reg))
-        .catch(err => console.log('SW registration failed:', err));
-    });
-  }
+    // Kode JS kamu bisa ditulis di sini
+    console.log("Aplikasi berjalan!");
   </script>
 </body>
 </html>
-    </textarea>
-
-    <textarea id="cssCode" style="display:none;">
-body { font-family: system-ui; background: linear-gradient(#0f0c29, #302b63, #24243e); color: white; min-height: 100vh; padding: 40px; text-align: center; margin: 0; }
-h1 { color: #00d4ff; }
-button { padding: 12px 30px; font-size: 1.1rem; background: #00d4ff; color: #000; border: none; border-radius: 50px; cursor: pointer; }
-    </textarea>
-
-    <textarea id="jsCode" style="display:none;">
-document.getElementById('test').onclick = () => {
-  alert('App custom kamu jalan! 🚀');
-};
-    </textarea>
+      </textarea>
+    </div>
   </div>
 
-  <div class="preview-area">
-    <iframe id="preview"></iframe>
+  <div class="right">
+    <div class="editor-header">Preview Aplikasi (seperti di HP)</div>
+    <div id="preview-info">
+      Preview real-time • Icon: <img id="iconPreview" style="width:32px;height:32px;border-radius:8px;vertical-align:middle;" src="" alt="No icon">
+      • Nama: <strong id="previewName">My Cool App</strong>
+    </div>
+    <iframe id="previewFrame"></iframe>
   </div>
 </div>
-
-<!-- Splash Preview -->
-<div id="splashPreview">
-  <img id="splashIcon" src="" alt="App Icon">
-  <div id="splashName"></div>
-</div>
-
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js"></script>
 
 <script>
-// Variabel
-const html = document.getElementById('htmlCode');
-const css  = document.getElementById('cssCode');
-const js   = document.getElementById('jsCode');
-const preview = document.getElementById('preview');
-const tabs = document.querySelectorAll('.tab');
-const appNameInput = document.getElementById('appName');
-const iconInput = document.getElementById('appIcon');
-const bgColorInput = document.getElementById('bgColor');
-const themeColorInput = document.getElementById('themeColor');
-const previewSplashBtn = document.getElementById('previewSplashBtn');
-const installBtn = document.getElementById('installBtn');
-const installStatus = document.getElementById('installStatus');
-const downloadBtn = document.getElementById('downloadBtn');
+// ========== Variabel global ==========
+let iconBase64 = "";
+let isPublished = false;
 
-const splashPreview = document.getElementById('splashPreview');
-const splashIcon = document.getElementById('splashIcon');
-const splashName = document.getElementById('splashName');
+// ========== Live Preview ==========
+const editor = document.getElementById("codeEditor");
+const frame = document.getElementById("previewFrame");
+const appNameInput = document.getElementById("appName");
+const iconPreview = document.getElementById("iconPreview");
+const previewName = document.getElementById("previewName");
 
-let iconBase64 = null;
-let deferredPrompt = null;
-
-// Tab switch
-tabs.forEach(tab => {
-  tab.addEventListener('click', () => {
-    tabs.forEach(t => t.classList.remove('active'));
-    tab.classList.add('active');
-    html.style.display = css.style.display = js.style.display = 'none';
-    document.getElementById(tab.dataset.lang + 'Code').style.display = 'block';
-  });
-});
-
-// Live preview
 function updatePreview() {
-  const content = `
-<!DOCTYPE html>
-<html>
-<head><style>${css.value}</style></head>
-<body>${html.value}<script>${js.value}<\/script></body>
-</html>`;
-  preview.srcdoc = content;
+  const code = editor.value;
+  frame.srcdoc = code.replace(
+    /<span id="appTitle">.*?<\/span>/,
+    `<span id="appTitle">${appNameInput.value || "My App"}</span>`
+  );
+  previewName.textContent = appNameInput.value || "My App";
 }
 
-[html, css, js, appNameInput].forEach(el => el.addEventListener('input', updatePreview));
+editor.addEventListener("input", updatePreview);
+appNameInput.addEventListener("input", updatePreview);
 
-// Upload icon
-iconInput.addEventListener('change', e => {
+// ========== Upload Icon ==========
+document.getElementById("iconUpload").addEventListener("change", (e) => {
   const file = e.target.files[0];
   if (!file) return;
+
   const reader = new FileReader();
-  reader.onload = ev => {
+  reader.onload = (ev) => {
     iconBase64 = ev.target.result;
-    splashIcon.src = iconBase64;
+    iconPreview.src = iconBase64;
   };
   reader.readAsDataURL(file);
 });
 
-// Check installed
-function checkInstalled() {
-  if (window.matchMedia('(display-mode: standalone)').matches) {
-    installStatus.textContent = 'App sudah terinstall!';
-    installBtn.style.display = 'none';
-    return true;
-  }
-  return false;
+// ========== Published / Unpublished ==========
+function togglePublish() {
+  isPublished = !isPublished;
+  const statusEl = document.getElementById("publishStatus");
+  statusEl.textContent = isPublished ? "Published" : "Unpublished";
+  statusEl.className = "status " + (isPublished ? "published" : "unpublished");
 }
 
-// beforeinstallprompt listener (Chromium/Android)
-window.addEventListener('beforeinstallprompt', e => {
-  e.preventDefault();
-  deferredPrompt = e;
-  if (!checkInstalled()) {
-    installBtn.style.display = 'inline-block';
-    installStatus.textContent = 'Bisa diinstall sekarang!';
-  }
-});
-
-// Klik install
-installBtn.addEventListener('click', async () => {
-  if (!deferredPrompt) {
-    alert('Prompt install tidak tersedia saat ini.\n\nCara manual di Android:\n1. Buka di Chrome\n2. Klik menu 3 titik → Install app / Tambahkan ke layar utama\n\nPastikan di-host HTTPS!');
+// ========== Simulasi Update ==========
+function checkForUpdate() {
+  if (!isPublished) {
+    alert("Aplikasi belum dipublish!");
     return;
   }
-  deferredPrompt.prompt();
-  const { outcome } = await deferredPrompt.userChoice;
-  if (outcome === 'accepted') {
-    alert('App berhasil diinstall! Cek home screen.');
-  } else {
-    alert('Install dibatalkan.');
-  }
-  deferredPrompt = null;
-  installBtn.style.display = 'none';
-});
+  alert("Mengirim sinyal update ke semua pengguna...\n\nDi aplikasi nanti akan muncul banner update!");
+  // Di dunia nyata: simpan version di server, app polling atau pakai Firebase
+}
 
-// Preview splash
-previewSplashBtn.addEventListener('click', () => {
-  if (!iconBase64) return alert('Upload icon dulu!');
-  splashPreview.style.setProperty('--splash-bg', bgColorInput.value);
-  splashIcon.src = iconBase64;
-  splashName.textContent = appNameInput.value.trim() || "My App";
-  splashPreview.classList.add('show');
-  setTimeout(() => {
-    splashPreview.style.opacity = '0';
-    setTimeout(() => splashPreview.classList.remove('show'), 600);
-  }, 3000);
-});
-
-// Download ZIP - siap install setelah host HTTPS
-downloadBtn.addEventListener('click', async () => {
-  const zip = new JSZip();
-  const appName = appNameInput.value.trim() || "MyApp";
-  const safeName = appName.replace(/[^a-z0-9]/gi, '').toLowerCase() || "myapp";
-  const bgColor = bgColorInput.value;
-  const themeColor = themeColorInput.value;
-
-  let userHtml = html.value;
-
-  if (!userHtml.includes('rel="manifest"')) {
-    userHtml = userHtml.replace(/<head>/, `<head>\n  <link rel="manifest" href="manifest.json">\n  <meta name="theme-color" content="${themeColor}">`);
+// ========== Simulasi Download APK ==========
+function simulateDownloadAPK() {
+  const name = (appNameInput.value || "aplikasi").toLowerCase().replace(/\s+/g, "") + ".apk";
+  
+  if (!isPublished) {
+    alert("Publish dulu sebelum download APK!");
+    return;
   }
 
-  const splashMeta = `
-  <link rel="apple-touch-startup-image" href="splash.png" media="(device-width: 430px) and (device-height: 932px) and (-webkit-device-pixel-ratio: 3)">
-  <link rel="apple-touch-startup-image" href="splash.png" media="(device-width: 393px) and (device-height: 852px) and (-webkit-device-pixel-ratio: 3)">
-  <link rel="apple-touch-startup-image" href="splash.png" media="(device-width: 428px) and (device-height: 926px) and (-webkit-device-pixel-ratio: 3)">
-  <link rel="apple-touch-startup-image" href="splash.png" media="(device-width: 390px) and (device-height: 844px) and (-webkit-device-pixel-ratio: 3)">
-  `;
+  alert(
+    `Simulasi Download APK berhasil!\n\n` +
+    `Nama file: ${name}\n` +
+    `Ukuran: ~8.2 MB\n` +
+    `Icon digunakan: ${iconBase64 ? "Ya" : "Tidak"}\n\n` +
+    `Di dunia nyata file .apk akan ter-download dan bisa diinstall.\n` +
+    `(Saat ini hanya simulasi karena butuh server build)`
+  );
 
-  userHtml = userHtml.replace(/<\/head>/, `${splashMeta}\n</head>`);
+  // Di dunia nyata → kirim ke backend → build → return link download
+}
 
-  zip.file("index.html", userHtml);
-  zip.file("style.css", css.value);
-  zip.file("script.js", js.value);
-
-  const manifest = {
-    name: appName,
-    short_name: appName.slice(0,12),
-    start_url: ".",
-    display: "standalone",
-    background_color: bgColor,
-    theme_color: themeColor,
-    icons: [
-      { src: "icon.png", sizes: "512x512", type: "image/png", purpose: "any maskable" },
-      { src: "icon.png", sizes: "192x192", type: "image/png", purpose: "any maskable" }
-    ]
-  };
-  zip.file("manifest.json", JSON.stringify(manifest, null, 2));
-
-  if (iconBase64) {
-    const data = iconBase64.split(',')[1];
-    zip.file("icon.png", data, {base64: true});
-    zip.file("splash.png", data, {base64: true});
-  } else {
-    const def = "iVBORw0KGgoAAAANSUhEUgAAAgAAAAIACAYAAAAD0eNTAAAgAElEQVR4nO3BAQ0AAADCoPVP7WdsAAGmB7YAAQABBAEEAAQQBBAAEEAQ";
-    zip.file("icon.png", def, {base64: true});
-    zip.file("splash.png", def, {base64: true});
-  }
-
-  const sw = `self.addEventListener('install', e => { e.waitUntil(caches.open('v1').then(c => c.addAll(['./','index.html','style.css','script.js','icon.png','splash.png']))); }); self.addEventListener('fetch', e => { e.respondWith(caches.match(e.request).then(r => r || fetch(e.request))); });`;
-  zip.file("sw.js", sw);
-
-  const blob = await zip.generateAsync({type:"blob"});
-  saveAs(blob, `${safeName}-pwa.zip`);
-
-  alert(`ZIP berhasil di-download!\n\nLangkah install di Android:\n1. Upload ZIP ke hosting GRATIS HTTPS (Netlify / Vercel / GitHub Pages)\n2. Buka link di Chrome Android\n3. Jika muncul banner "Install app" → klik\n   Atau: Menu 3 titik → Install app / Tambahkan ke layar utama\n\nApp akan muncul di home screen seperti native app!`);
-});
-
-checkInstalled();
+// Init
 updatePreview();
 </script>
 
