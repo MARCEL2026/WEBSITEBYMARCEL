@@ -2,24 +2,46 @@
 <html lang="id">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>APK Builder Sederhana - Buat Aplikasi Sendiri</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"/>
+  <title data-app-name>My APK Builder</title>
   <style>
     body {
       margin: 0;
-      font-family: Arial, sans-serif;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
       background: #f0f2f5;
       height: 100vh;
       display: flex;
       flex-direction: column;
+      overflow: hidden;
     }
     header {
       background: #1a73e8;
       color: white;
-      padding: 10px 20px;
+      padding: 12px 20px;
       display: flex;
       justify-content: space-between;
       align-items: center;
+      font-size: 1.1rem;
+    }
+    .controls {
+      padding: 12px 20px;
+      background: white;
+      border-bottom: 1px solid #ddd;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      align-items: center;
+    }
+    .controls input, .controls button {
+      padding: 8px 12px;
+      border: 1px solid #ccc;
+      border-radius: 6px;
+    }
+    .controls button {
+      background: #1a73e8;
+      color: white;
+      border: none;
+      cursor: pointer;
     }
     .container {
       flex: 1;
@@ -33,34 +55,21 @@
       border: 1px solid #ddd;
     }
     .left { background: #fff; }
-    .right { background: #f8f9fa; }
+    .right { background: #fafafa; }
     .editor-header {
       padding: 10px;
-      background: #eee;
+      background: #f0f0f0;
       font-weight: bold;
-    }
-    .controls {
-      padding: 15px;
-      background: #fff;
       border-bottom: 1px solid #ddd;
-    }
-    .controls label { margin-right: 10px; }
-    .controls input, .controls button {
-      margin: 5px 0;
-      padding: 8px;
-    }
-    .editor {
-      flex: 1;
-      display: flex;
-      flex-direction: column;
     }
     textarea {
       flex: 1;
-      font-family: 'Courier New', monospace;
+      font-family: 'Consolas', 'Courier New', monospace;
       font-size: 14px;
-      padding: 10px;
+      padding: 12px;
       border: none;
       resize: none;
+      outline: none;
     }
     iframe {
       width: 100%;
@@ -72,153 +81,188 @@
       padding: 10px;
       background: #e3f2fd;
       text-align: center;
+      font-size: 0.9rem;
     }
     .status {
-      padding: 8px 15px;
+      padding: 6px 12px;
+      border-radius: 12px;
+      font-size: 0.85rem;
       font-weight: bold;
     }
     .published { background: #d4edda; color: #155724; }
     .unpublished { background: #f8d7da; color: #721c24; }
+    #updateBanner {
+      display: none;
+      background: #fff3cd;
+      color: #856404;
+      padding: 12px;
+      margin: 12px;
+      border-radius: 6px;
+      text-align: center;
+    }
+    #nativeInfo {
+      font-size: 0.85rem;
+      color: #555;
+      text-align: center;
+      padding: 8px;
+      background: #e9ecef;
+    }
   </style>
 </head>
 <body>
 
 <header>
-  <h2>APK Builder Sederhana v0.1</h2>
-  <div>
-    <span class="status unpublished" id="publishStatus">Unpublished</span>
-  </div>
+  <h2 id="appTitleHeader">APK Builder Sederhana</h2>
+  <span class="status unpublished" id="publishStatus">Unpublished</span>
 </header>
 
 <div class="controls">
   <label>Nama Aplikasi:</label>
-  <input type="text" id="appName" placeholder="Contoh: TikTok Baru" value="My Cool App">
+  <input type="text" id="appName" placeholder="Nama App" value="My Awesome App">
 
-  <label>Icon Aplikasi:</label>
-  <input type="file" id="iconUpload" accept="image/*">
+  <label>Icon:</label>
+  <input type="file" id="iconUpload" accept="image/png,image/jpeg">
 
-  <button onclick="togglePublish()">Toggle Published</button>
-  <button onclick="checkForUpdate()">Cek Update di App</button>
-  <button onclick="simulateDownloadAPK()">Download APK (simulasi)</button>
+  <button onclick="togglePublish()">Toggle Publish</button>
+  <button onclick="simulateUpdateCheck()">Cek Update</button>
+  <button onclick="simulateDownload()">Download APK (simulasi)</button>
+</div>
+
+<div id="nativeInfo">Loading app info...</div>
+<div id="updateBanner">
+  <strong>Ada versi baru tersedia!</strong> 
+  <button onclick="alert('Download & install update dari link/server')">Update Sekarang</button>
 </div>
 
 <div class="container">
   <div class="left">
-    <div class="editor-header">Editor Kode (HTML + CSS + JS)</div>
-    <div class="editor">
-      <textarea id="codeEditor" placeholder="Tulis kode HTML + CSS + JS di sini...">
+    <div class="editor-header">Kode HTML + CSS + JS (Editor)</div>
+    <textarea id="codeEditor" spellcheck="false">
+<!-- Contoh kode awal - edit sesuka hati -->
 <!DOCTYPE html>
 <html>
 <head>
-  <title>My App</title>
+  <title data-dynamic-title></title>
   <style>
-    body { font-family: Arial; text-align: center; padding: 50px; }
-    h1 { color: #1a73e8; }
+    body { font-family: Arial; text-align: center; padding: 40px; background: linear-gradient(to bottom, #e0f7fa, #ffffff); }
+    h1 { color: #0277bd; }
+    button { padding: 12px 24px; font-size: 1.1rem; background: #0288d1; color: white; border: none; border-radius: 8px; }
   </style>
 </head>
 <body>
-  <h1>Selamat Datang di <span id="appTitle">My Cool App</span>!</h1>
-  <p>Ini adalah aplikasi pertama kamu.</p>
-
-  <div id="updateBanner" style="display:none; background:#ffcc00; padding:15px; margin:20px;">
-    <strong>Ada Update baru!</strong> Versi terbaru tersedia.
-    <button onclick="installUpdate()">Update Sekarang</button>
-  </div>
+  <h1>Halo dari <span id="appTitle">My Awesome App</span>!</h1>
+  <p>Ini aplikasi yang kamu buat sendiri 🚀</p>
+  <button onclick="alert('Tombol dari preview ditekan!')">Klik aku</button>
 
   <script>
-    // Kode JS kamu bisa ditulis di sini
-    console.log("Aplikasi berjalan!");
+    console.log("Aplikasi berjalan di preview atau native!");
   </script>
 </body>
 </html>
-      </textarea>
-    </div>
+    </textarea>
   </div>
 
   <div class="right">
-    <div class="editor-header">Preview Aplikasi (seperti di HP)</div>
+    <div class="editor-header">Preview (mirip tampilan HP)</div>
     <div id="preview-info">
-      Preview real-time • Icon: <img id="iconPreview" style="width:32px;height:32px;border-radius:8px;vertical-align:middle;" src="" alt="No icon">
-      • Nama: <strong id="previewName">My Cool App</strong>
+      Icon: <img id="iconPreview" style="width:28px;height:28px;border-radius:6px;vertical-align:middle;" src="" alt="Icon">
+      • Nama: <strong id="previewName">My Awesome App</strong>
     </div>
-    <iframe id="previewFrame"></iframe>
+    <iframe id="previewFrame" sandbox="allow-scripts allow-same-origin"></iframe>
   </div>
 </div>
 
 <script>
-// ========== Variabel global ==========
+// ========== Variabel Global ==========
 let iconBase64 = "";
 let isPublished = false;
+const CURRENT_VERSION = "1.0.0";   // Ganti saat ada update
+
+const appNameInput = document.getElementById('appName');
+const codeEditor   = document.getElementById('codeEditor');
+const frame        = document.getElementById('previewFrame');
+const iconPreview  = document.getElementById('iconPreview');
+const previewName  = document.getElementById('previewName');
+const publishStatus = document.getElementById('publishStatus');
+const appTitleHeader = document.getElementById('appTitleHeader');
 
 // ========== Live Preview ==========
-const editor = document.getElementById("codeEditor");
-const frame = document.getElementById("previewFrame");
-const appNameInput = document.getElementById("appName");
-const iconPreview = document.getElementById("iconPreview");
-const previewName = document.getElementById("previewName");
-
 function updatePreview() {
-  const code = editor.value;
-  frame.srcdoc = code.replace(
-    /<span id="appTitle">.*?<\/span>/,
-    `<span id="appTitle">${appNameInput.value || "My App"}</span>`
-  );
+  let code = codeEditor.value;
+  // Ganti judul dinamis
+  code = code.replace(/<title data-dynamic-title>.*?<\/title>/, `<title>${appNameInput.value || "My App"}</title>`);
+  code = code.replace(/<span id="appTitle">.*?<\/span>/g, `<span id="appTitle">${appNameInput.value || "My App"}</span>`);
+
+  frame.srcdoc = code;
   previewName.textContent = appNameInput.value || "My App";
+  appTitleHeader.textContent = appNameInput.value || "APK Builder Sederhana";
 }
 
-editor.addEventListener("input", updatePreview);
-appNameInput.addEventListener("input", updatePreview);
+codeEditor.addEventListener('input', updatePreview);
+appNameInput.addEventListener('input', updatePreview);
 
 // ========== Upload Icon ==========
-document.getElementById("iconUpload").addEventListener("change", (e) => {
+document.getElementById('iconUpload').addEventListener('change', e => {
   const file = e.target.files[0];
   if (!file) return;
-
   const reader = new FileReader();
-  reader.onload = (ev) => {
+  reader.onload = ev => {
     iconBase64 = ev.target.result;
     iconPreview.src = iconBase64;
   };
   reader.readAsDataURL(file);
 });
 
-// ========== Published / Unpublished ==========
+// ========== Publish Toggle ==========
 function togglePublish() {
   isPublished = !isPublished;
-  const statusEl = document.getElementById("publishStatus");
-  statusEl.textContent = isPublished ? "Published" : "Unpublished";
-  statusEl.className = "status " + (isPublished ? "published" : "unpublished");
+  publishStatus.textContent = isPublished ? "Published" : "Unpublished";
+  publishStatus.className = `status ${isPublished ? 'published' : 'unpublished'}`;
 }
 
-// ========== Simulasi Update ==========
-function checkForUpdate() {
+// ========== Simulasi Update (bisa diganti fetch ke server) ==========
+async function simulateUpdateCheck() {
   if (!isPublished) {
-    alert("Aplikasi belum dipublish!");
+    alert("Publish dulu!");
     return;
   }
-  alert("Mengirim sinyal update ke semua pengguna...\n\nDi aplikasi nanti akan muncul banner update!");
-  // Di dunia nyata: simpan version di server, app polling atau pakai Firebase
+
+  // Contoh: nanti fetch dari server
+  // const res = await fetch('https://your-api/version.json');
+  // const data = await res.json();
+  // if (data.version > CURRENT_VERSION) { ... }
+
+  // Simulasi
+  const hasUpdate = Math.random() > 0.5; // acak untuk demo
+  document.getElementById('updateBanner').style.display = hasUpdate ? 'block' : 'none';
+  if (hasUpdate) {
+    alert("Ada update! (demo)");
+  } else {
+    alert("Sudah versi terbaru.");
+  }
 }
 
 // ========== Simulasi Download APK ==========
-function simulateDownloadAPK() {
-  const name = (appNameInput.value || "aplikasi").toLowerCase().replace(/\s+/g, "") + ".apk";
-  
+function simulateDownload() {
   if (!isPublished) {
-    alert("Publish dulu sebelum download APK!");
+    alert("Publish dulu sebelum download!");
     return;
   }
+  const safeName = (appNameInput.value || "aplikasi").toLowerCase().replace(/[^a-z0-9]/g, '');
+  alert(`Simulasi: Download ${safeName}-v${CURRENT_VERSION}.apk berhasil!\n\n(di real: hasil build dari Capacitor)`);
+}
 
-  alert(
-    `Simulasi Download APK berhasil!\n\n` +
-    `Nama file: ${name}\n` +
-    `Ukuran: ~8.2 MB\n` +
-    `Icon digunakan: ${iconBase64 ? "Ya" : "Tidak"}\n\n` +
-    `Di dunia nyata file .apk akan ter-download dan bisa diinstall.\n` +
-    `(Saat ini hanya simulasi karena butuh server build)`
-  );
-
-  // Di dunia nyata → kirim ke backend → build → return link download
+// ========== Deteksi Capacitor / Native Environment ==========
+if (window.Capacitor) {
+  document.getElementById('nativeInfo').innerHTML = `
+    Running in Capacitor • Platform: ${Capacitor.getPlatform()} • Version: ${CURRENT_VERSION}
+  `;
+  // Contoh pakai Capacitor API
+  Capacitor.App.getInfo().then(info => {
+    console.log("App Info:", info);
+  });
+} else {
+  document.getElementById('nativeInfo').textContent = "Running in Browser (preview mode)";
 }
 
 // Init
