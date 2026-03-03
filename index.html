@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Live Code Editor → Buat PWA + Splash Preview</title>
+  <title>Live Code Editor → Buat PWA Installable Android</title>
   <style>
     * { margin:0; padding:0; box-sizing:border-box; }
     body {
@@ -42,15 +42,16 @@
     }
     button {
       padding: 8px 16px;
-      background: #238636;
       color: white;
       border: none;
       border-radius: 6px;
       cursor: pointer;
     }
-    button:hover { background: #2ea043; }
     #previewSplashBtn { background: #8957e5; }
     #previewSplashBtn:hover { background: #a37eff; }
+    #installBtn { background: #1f6feb; display: none; }
+    #installBtn:hover { background: #388bfd; }
+    #installStatus { font-size: 0.9rem; color: #58a6ff; margin-left: 8px; }
 
     .container { flex:1; display:flex; overflow:hidden; }
     .editor-area, .preview-area { flex:1; height:100%; }
@@ -89,7 +90,7 @@
 
     iframe { width:100%; height:100%; border:none; background:white; }
 
-    /* Splash Preview Modal */
+    /* Splash Preview */
     #splashPreview {
       position: fixed;
       inset: 0;
@@ -123,7 +124,7 @@
 <body>
 
 <header>
-  <h1>Buat PWA + Preview Splash Screen</h1>
+  <h1>Buat Aplikasi PWA Installable di Android</h1>
   <div class="settings">
     <label>Nama App:</label>
     <input type="text" id="appName" placeholder="Nama App" value="My Awesome App">
@@ -138,7 +139,9 @@
     <input type="color" id="themeColor" value="#000000">
 
     <button id="previewSplashBtn">Preview Splash</button>
-    <button id="downloadBtn">Download ZIP Aplikasi</button>
+    <button id="installBtn">Install App Sekarang</button>
+    <span id="installStatus"></span>
+    <button id="downloadBtn">Download ZIP (Host di HTTPS)</button>
   </div>
 </header>
 
@@ -159,44 +162,41 @@
   <title>My Awesome App</title>
   <link rel="stylesheet" href="style.css">
   <link rel="manifest" href="manifest.json">
-  <!-- iOS splash screens akan ditambahkan otomatis saat download -->
+  <meta name="theme-color" content="#000000">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black">
 </head>
 <body>
-  <h1>Selamat datang di app custom!</h1>
-  <p>Install app ini ke home screen untuk pengalaman full seperti native app.</p>
+  <h1>Selamat! Ini App Custom Kamu</h1>
+  <p>Bisa diinstall di Android via Chrome → Install app atau Add to home screen.</p>
 
   <button id="test">Tes Klik</button>
 
   <script src="script.js"></script>
+
+  <!-- Auto register SW -->
+  <script>
+  if ('serviceWorker' in navigator) {
+    window.addEventListener('load', () => {
+      navigator.serviceWorker.register('sw.js')
+        .then(reg => console.log('SW registered!', reg))
+        .catch(err => console.log('SW registration failed:', err));
+    });
+  }
+  </script>
 </body>
 </html>
     </textarea>
 
     <textarea id="cssCode" style="display:none;">
-body {
-  font-family: system-ui;
-  background: linear-gradient(#0f0c29, #302b63, #24243e);
-  color: white;
-  min-height: 100vh;
-  padding: 40px;
-  text-align: center;
-  margin: 0;
-}
+body { font-family: system-ui; background: linear-gradient(#0f0c29, #302b63, #24243e); color: white; min-height: 100vh; padding: 40px; text-align: center; margin: 0; }
 h1 { color: #00d4ff; }
-button {
-  padding: 12px 30px;
-  font-size: 1.1rem;
-  background: #00d4ff;
-  color: #000;
-  border: none;
-  border-radius: 50px;
-  cursor: pointer;
-}
+button { padding: 12px 30px; font-size: 1.1rem; background: #00d4ff; color: #000; border: none; border-radius: 50px; cursor: pointer; }
     </textarea>
 
     <textarea id="jsCode" style="display:none;">
 document.getElementById('test').onclick = () => {
-  alert('Aplikasi custom berjalan lancar! 🚀');
+  alert('App custom kamu jalan! 🚀');
 };
     </textarea>
   </div>
@@ -206,7 +206,7 @@ document.getElementById('test').onclick = () => {
   </div>
 </div>
 
-<!-- Splash Preview Overlay -->
+<!-- Splash Preview -->
 <div id="splashPreview">
   <img id="splashIcon" src="" alt="App Icon">
   <div id="splashName"></div>
@@ -227,6 +227,8 @@ const iconInput = document.getElementById('appIcon');
 const bgColorInput = document.getElementById('bgColor');
 const themeColorInput = document.getElementById('themeColor');
 const previewSplashBtn = document.getElementById('previewSplashBtn');
+const installBtn = document.getElementById('installBtn');
+const installStatus = document.getElementById('installStatus');
 const downloadBtn = document.getElementById('downloadBtn');
 
 const splashPreview = document.getElementById('splashPreview');
@@ -234,8 +236,9 @@ const splashIcon = document.getElementById('splashIcon');
 const splashName = document.getElementById('splashName');
 
 let iconBase64 = null;
+let deferredPrompt = null;
 
-// Ganti tab
+// Tab switch
 tabs.forEach(tab => {
   tab.addEventListener('click', () => {
     tabs.forEach(t => t.classList.remove('active'));
@@ -265,39 +268,62 @@ iconInput.addEventListener('change', e => {
   const reader = new FileReader();
   reader.onload = ev => {
     iconBase64 = ev.target.result;
-    splashIcon.src = iconBase64; // update preview icon juga
-    alert('Icon diupload! Bisa langsung preview splash.');
+    splashIcon.src = iconBase64;
   };
   reader.readAsDataURL(file);
 });
 
-// Preview Splash Simulation (Android-like)
-previewSplashBtn.addEventListener('click', () => {
-  if (!iconBase64) {
-    alert('Upload icon dulu ya, biar splash terlihat keren!');
+// Check installed
+function checkInstalled() {
+  if (window.matchMedia('(display-mode: standalone)').matches) {
+    installStatus.textContent = 'App sudah terinstall!';
+    installBtn.style.display = 'none';
+    return true;
+  }
+  return false;
+}
+
+// beforeinstallprompt listener (Chromium/Android)
+window.addEventListener('beforeinstallprompt', e => {
+  e.preventDefault();
+  deferredPrompt = e;
+  if (!checkInstalled()) {
+    installBtn.style.display = 'inline-block';
+    installStatus.textContent = 'Bisa diinstall sekarang!';
+  }
+});
+
+// Klik install
+installBtn.addEventListener('click', async () => {
+  if (!deferredPrompt) {
+    alert('Prompt install tidak tersedia saat ini.\n\nCara manual di Android:\n1. Buka di Chrome\n2. Klik menu 3 titik → Install app / Tambahkan ke layar utama\n\nPastikan di-host HTTPS!');
     return;
   }
+  deferredPrompt.prompt();
+  const { outcome } = await deferredPrompt.userChoice;
+  if (outcome === 'accepted') {
+    alert('App berhasil diinstall! Cek home screen.');
+  } else {
+    alert('Install dibatalkan.');
+  }
+  deferredPrompt = null;
+  installBtn.style.display = 'none';
+});
 
-  const bg = bgColorInput.value;
-  const name = appNameInput.value.trim() || "My App";
-
-  splashPreview.style.setProperty('--splash-bg', bg);
+// Preview splash
+previewSplashBtn.addEventListener('click', () => {
+  if (!iconBase64) return alert('Upload icon dulu!');
+  splashPreview.style.setProperty('--splash-bg', bgColorInput.value);
   splashIcon.src = iconBase64;
-  splashName.textContent = name;
-
+  splashName.textContent = appNameInput.value.trim() || "My App";
   splashPreview.classList.add('show');
-
-  // Simulasi splash hilang setelah 3 detik (seperti transisi ke app)
   setTimeout(() => {
     splashPreview.style.opacity = '0';
-    setTimeout(() => {
-      splashPreview.classList.remove('show');
-      splashPreview.style.opacity = '1';
-    }, 600);
+    setTimeout(() => splashPreview.classList.remove('show'), 600);
   }, 3000);
 });
 
-// Download ZIP (sama seperti sebelumnya, dengan splash support)
+// Download ZIP - siap install setelah host HTTPS
 downloadBtn.addEventListener('click', async () => {
   const zip = new JSZip();
   const appName = appNameInput.value.trim() || "MyApp";
@@ -312,13 +338,10 @@ downloadBtn.addEventListener('click', async () => {
   }
 
   const splashMeta = `
-  <!-- iOS Splash Screens -->
   <link rel="apple-touch-startup-image" href="splash.png" media="(device-width: 430px) and (device-height: 932px) and (-webkit-device-pixel-ratio: 3)">
   <link rel="apple-touch-startup-image" href="splash.png" media="(device-width: 393px) and (device-height: 852px) and (-webkit-device-pixel-ratio: 3)">
   <link rel="apple-touch-startup-image" href="splash.png" media="(device-width: 428px) and (device-height: 926px) and (-webkit-device-pixel-ratio: 3)">
   <link rel="apple-touch-startup-image" href="splash.png" media="(device-width: 390px) and (device-height: 844px) and (-webkit-device-pixel-ratio: 3)">
-  <link rel="apple-touch-startup-image" href="splash.png" media="(device-width: 1024px) and (device-height: 1366px) and (-webkit-device-pixel-ratio: 2)">
-  <link rel="apple-touch-startup-image" href="splash.png" media="(device-width: 834px) and (device-height: 1194px) and (-webkit-device-pixel-ratio: 2)">
   `;
 
   userHtml = userHtml.replace(/<\/head>/, `${splashMeta}\n</head>`);
@@ -328,45 +351,39 @@ downloadBtn.addEventListener('click', async () => {
   zip.file("script.js", js.value);
 
   const manifest = {
-    "name": appName,
-    "short_name": appName.slice(0,12),
-    "start_url": ".",
-    "display": "standalone",
-    "background_color": bgColor,
-    "theme_color": themeColor,
-    "icons": [
-      { "src": "icon.png", "sizes": "512x512", "type": "image/png", "purpose": "any maskable" },
-      { "src": "icon.png", "sizes": "192x192", "type": "image/png", "purpose": "any maskable" }
+    name: appName,
+    short_name: appName.slice(0,12),
+    start_url: ".",
+    display: "standalone",
+    background_color: bgColor,
+    theme_color: themeColor,
+    icons: [
+      { src: "icon.png", sizes: "512x512", type: "image/png", purpose: "any maskable" },
+      { src: "icon.png", sizes: "192x192", type: "image/png", purpose: "any maskable" }
     ]
   };
   zip.file("manifest.json", JSON.stringify(manifest, null, 2));
 
   if (iconBase64) {
-    const base64Data = iconBase64.split(',')[1];
-    zip.file("icon.png", base64Data, {base64: true});
-    zip.file("splash.png", base64Data, {base64: true});
+    const data = iconBase64.split(',')[1];
+    zip.file("icon.png", data, {base64: true});
+    zip.file("splash.png", data, {base64: true});
   } else {
-    const defaultIcon = "iVBORw0KGgoAAAANSUhEUgAAAgAAAAIACAYAAAAD0eNTAAAgAElEQVR4nO3BAQ0AAADCoPVP7WdsAAGmB7YAAQABBAEEAAQQBBAAEEAQ";
-    zip.file("icon.png", defaultIcon, {base64: true});
-    zip.file("splash.png", defaultIcon, {base64: true});
+    const def = "iVBORw0KGgoAAAANSUhEUgAAAgAAAAIACAYAAAAD0eNTAAAgAElEQVR4nO3BAQ0AAADCoPVP7WdsAAGmB7YAAQABBAEEAAQQBBAAEEAQ";
+    zip.file("icon.png", def, {base64: true});
+    zip.file("splash.png", def, {base64: true});
   }
 
-  const sw = `
-self.addEventListener('install', e => {
-  e.waitUntil(caches.open('app-cache-v1').then(cache => cache.addAll(['./', 'index.html', 'style.css', 'script.js', 'icon.png', 'splash.png'])));
-});
-self.addEventListener('fetch', e => {
-  e.respondWith(caches.match(e.request).then(resp => resp || fetch(e.request)));
-});
-  `;
+  const sw = `self.addEventListener('install', e => { e.waitUntil(caches.open('v1').then(c => c.addAll(['./','index.html','style.css','script.js','icon.png','splash.png']))); }); self.addEventListener('fetch', e => { e.respondWith(caches.match(e.request).then(r => r || fetch(e.request))); });`;
   zip.file("sw.js", sw);
 
   const blob = await zip.generateAsync({type:"blob"});
   saveAs(blob, `${safeName}-pwa.zip`);
 
-  alert(`ZIP di-download!\n\nPreview Splash sudah bisa dipakai di editor ini.\nUntuk test splash asli:\n- Install PWA di HP (via "Add to home screen")\n- Buka app dari icon home → splash akan muncul otomatis`);
+  alert(`ZIP berhasil di-download!\n\nLangkah install di Android:\n1. Upload ZIP ke hosting GRATIS HTTPS (Netlify / Vercel / GitHub Pages)\n2. Buka link di Chrome Android\n3. Jika muncul banner "Install app" → klik\n   Atau: Menu 3 titik → Install app / Tambahkan ke layar utama\n\nApp akan muncul di home screen seperti native app!`);
 });
 
+checkInstalled();
 updatePreview();
 </script>
 
