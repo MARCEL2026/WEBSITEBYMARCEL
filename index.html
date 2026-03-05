@@ -1,35 +1,56 @@
-
 <!DOCTYPE html>
 <html lang="id">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Editor Coding Website</title>
+    <title>Editor Coding</title>
     <style>
-        body { font-family: Arial, sans-serif; margin: 20px; }
-        textarea { width: 100%; height: 300px; font-family: monospace; }
-        button { margin-top: 10px; padding: 10px; background-color: #4CAF50; color: white; border: none; cursor: pointer; }
-        button:hover { background-color: #45a049; }
+        body { 
+            font-family: Arial, sans-serif; 
+            margin: 20px; 
+            background: #f8f9fa;
+        }
+        h1 { color: #333; }
+        textarea { 
+            width: 100%; 
+            height: 400px; 
+            font-family: 'Courier New', monospace; 
+            font-size: 15px; 
+            padding: 12px; 
+            border: 1px solid #ccc; 
+            border-radius: 4px;
+        }
+        button { 
+            margin-top: 12px; 
+            padding: 12px 24px; 
+            background-color: #007bff; 
+            color: white; 
+            border: none; 
+            border-radius: 4px; 
+            cursor: pointer; 
+            font-size: 16px;
+        }
+        button:hover { background-color: #0056b3; }
     </style>
 </head>
 <body>
-    <h1>Editor untuk Masukkan Coding HTML</h1>
-    <p>Masukkan code HTML Anda di bawah ini, lalu klik tombol untuk simpan dan preview (akan muncul otomatis di Website 2 jika dibuka).</p>
-    <textarea id="codeInput" placeholder="Tulis code HTML di sini..."></textarea>
-    <button onclick="saveCode()">Simpan dan Preview</button>
+    <h1>Masukkan Kode HTML Anda</h1>
+    <textarea id="codeInput" placeholder="Tulis kode HTML lengkap di sini...&#10;Contoh:&#10;&lt;!DOCTYPE html&gt;&#10;&lt;html&gt;&#10;  &lt;head&gt;...&lt;/head&gt;&#10;  &lt;body&gt;...&lt;/body&gt;&#10;&lt;/html&gt;"></textarea>
+    <br>
+    <button onclick="saveCode()">Simpan & Lihat Hasil</button>
 
     <script>
         function saveCode() {
             const code = document.getElementById('codeInput').value;
-            localStorage.setItem('savedHTML', code);
-            alert('Code disimpan! Buka Website 2 untuk melihat preview otomatis.');
+            localStorage.setItem('myCustomWebsite', code);
+            alert('Kode disimpan! Buka tab Website 2 untuk melihat hasilnya langsung.');
         }
 
-        // Muat code sebelumnya jika ada
+        // Load kode sebelumnya jika ada
         window.onload = function() {
-            const savedCode = localStorage.getItem('savedHTML');
-            if (savedCode) {
-                document.getElementById('codeInput').value = savedCode;
+            const saved = localStorage.getItem('myCustomWebsite');
+            if (saved) {
+                document.getElementById('codeInput').value = saved;
             }
         };
     </script>
