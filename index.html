@@ -3,154 +3,67 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>WEBSITE BY MARCEL</title>
+    <title>Preview</title>
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap');
-        * { margin:0; padding:0; box-sizing:border-box; font-family:'Inter',sans-serif; }
-        body { background:#0f172a; color:#e2e8f0; }
-        
-        .topbar { 
-            background:#1e2937; 
-            padding:18px 30px; 
-            display:flex; 
-            align-items:center; 
-            justify-content:space-between; 
-            position:sticky; 
-            top:0; 
-            z-index:100; 
-            border-bottom:4px solid #0ea5e9; 
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
         }
         
-        .logo { 
-            font-size:26px; 
-            font-weight:700; 
-            color:#0ea5e9; 
+        body {
+            background: #111;
+            font-family: Arial, sans-serif;
+            overflow: hidden;
         }
         
-        .status { 
-            font-size:22px; 
-            font-weight:700; 
-            padding:10px 28px; 
-            border-radius:9999px; 
+        #preview-container {
+            width: 100vw;
+            height: 100vh;
+            background: white;
+            overflow: auto;
+            box-shadow: none;
         }
-        
-        .content { 
-            max-width:1100px; 
-            margin:50px auto; 
-            padding:0 30px; 
+
+        /* Agar tampilan seperti layar HP / full screen */
+        @media (max-width: 768px) {
+            #preview-container {
+                width: 100%;
+                height: 100vh;
+            }
         }
-        
-        .main-content { 
-            background:#1e2937; 
-            border-radius:16px; 
-            padding:50px 40px; 
-            min-height:70vh; 
-            box-shadow:0 20px 40px rgba(0,0,0,0.3); 
-            text-align:center; 
-        }
-        
-        .refresh-box { 
-            background:#334155; 
-            padding:18px 25px; 
-            border-radius:12px; 
-            margin-bottom:30px; 
-            display:flex; 
-            align-items:center; 
-            gap:15px; 
-            font-weight:600; 
-        }
-        
-        h1 { color:#0ea5e9; margin-bottom:20px; }
-        p { line-height:1.7; }
     </style>
 </head>
 <body>
-    <div class="topbar">
-        <div class="logo">WEBSITE BY MARCEL</div>
-        
-        <!-- STATUS ONLINE / OFFLINE -->
-        <div id="statusBadge" class="status">[OFFLINE]</div>
-    </div>
     
-    <div class="content">
-        <!-- JADWAL REFRESH -->
-        <div class="refresh-box">
-            <span style="font-size:26px;">📅</span>
-            <div>
-                <strong>[REFRESH]</strong> 
-                Jadwal update berikutnya: 
-                <span id="jadwalText" style="color:#facc15;">Belum ada jadwal</span>
-            </div>
-        </div>
-        
-        <!-- KONTEN WEBSITE -->
-        <div class="main-content" id="mainContent">
-            <!-- Pesan default saat belum ada publish -->
-            <h1>MOHON BERSABAR</h1>
-            <p style="font-size:19px; margin-top:20px; color:#cbd5e1;">
-                APLIKASI WEBSITE SEDANG PROSES<br>
-                HARAP TUNGGU BEBERAPA MENIT
-            </p>
-            <div style="margin-top:40px; font-size:15px; opacity:0.6;">
-                Halaman ini akan otomatis update setelah pemilik melakukan publish dari system resmi
-            </div>
+    <div id="preview-container">
+        <!-- Konten preview akan muncul di sini -->
+        <div style="text-align:center; padding: 80px 20px; color: #888; font-size: 18px;">
+            <h2>Preview Website</h2>
+            <p>Kirim codingan dari halaman Editor untuk melihat hasilnya di sini.</p>
         </div>
     </div>
 
     <script>
-        // Fungsi load semua data dari localStorage
-        function loadAll() {
-            loadContent();
-            loadStatus();
-            loadJadwal();
-        }
-        
-        // Load konten website yang sudah di-publish
-        function loadContent() {
-            const savedHTML = localStorage.getItem('publishedHTML');
-            const container = document.getElementById('mainContent');
-            
-            if (savedHTML && savedHTML.trim() !== '') {
-                container.innerHTML = savedHTML;
+        const container = document.getElementById('preview-container');
+        const channel = new BroadcastChannel('website-preview');
+
+        channel.onmessage = function(event) {
+            if (event.data === "REFRESH") {
+                // Force refresh tampilan
+                const currentHTML = container.innerHTML;
+                container.innerHTML = currentHTML;
+                return;
             }
-            // Jika belum ada publish, tetap tampilkan pesan default
-        }
-        
-        // Load status ONLINE / OFFLINE
-        function loadStatus() {
-            const status = localStorage.getItem('siteStatus') || 'offline';
-            const badge = document.getElementById('statusBadge');
             
-            if (status === 'online') {
-                badge.innerHTML = '[ONLINE]';
-                badge.style.backgroundColor = '#10b981';
-                badge.style.color = 'white';
-            } else {
-                badge.innerHTML = '[OFFLINE]';
-                badge.style.backgroundColor = '#ef4444';
-                badge.style.color = 'white';
-            }
-        }
-        
-        // Load jadwal refresh
-        function loadJadwal() {
-            const jadwal = localStorage.getItem('nextRefresh');
-            const el = document.getElementById('jadwalText');
-            
-            if (jadwal) {
-                el.innerHTML = `<strong style="color:#facc15;">${jadwal}</strong>`;
-            } else {
-                el.textContent = 'Belum ada jadwal';
-            }
-        }
-        
-        // Auto refresh setiap 4 detik
+            // Tampilkan kode HTML yang dikirim
+            container.innerHTML = event.data;
+        };
+
+        // Optional: Refresh otomatis jika ada perubahan
         setInterval(() => {
-            loadAll();
-        }, 4000);
-        
-        // Load pertama kali
-        window.onload = loadAll;
+            // Bisa ditambahkan fungsi lain jika perlu
+        }, 3000);
     </script>
 </body>
 </html>
