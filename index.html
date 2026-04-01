@@ -22,15 +22,7 @@
             height: 100vh;
             background: white;
             overflow: auto;
-            box-shadow: none;
-        }
-
-        /* Agar tampilan seperti layar HP / full screen */
-        @media (max-width: 768px) {
-            #preview-container {
-                width: 100%;
-                height: 100vh;
-            }
+            position: relative;
         }
     </style>
 </head>
@@ -38,7 +30,7 @@
     
     <div id="preview-container">
         <!-- Konten preview akan muncul di sini -->
-        <div style="text-align:center; padding: 80px 20px; color: #888; font-size: 18px;">
+        <div style="text-align:center; padding: 100px 20px; color: #888; font-size: 18px;">
             <h2>Preview Website</h2>
             <p>Kirim codingan dari halaman Editor untuk melihat hasilnya di sini.</p>
         </div>
@@ -46,6 +38,8 @@
 
     <script>
         const container = document.getElementById('preview-container');
+
+        // Terima kode dari Index 1
         const channel = new BroadcastChannel('website-preview');
 
         channel.onmessage = function(event) {
@@ -56,14 +50,9 @@
                 return;
             }
             
-            // Tampilkan kode HTML yang dikirim
+            // Tampilkan kode HTML yang dikirim dari Index 1
             container.innerHTML = event.data;
         };
-
-        // Optional: Refresh otomatis jika ada perubahan
-        setInterval(() => {
-            // Bisa ditambahkan fungsi lain jika perlu
-        }, 3000);
     </script>
 </body>
 </html>
